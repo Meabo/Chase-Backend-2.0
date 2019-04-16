@@ -3,8 +3,7 @@ const socketUrl: string = `ws://localhost:${port}`;
 import {Client} from "colyseus.js";
 import Area from "../area";
 import {methods, gameServer} from "../socketServer";
-import {Location} from "../location";
-import {doesNotReject} from "assert";
+import {assert, expect} from "chai";
 
 describe("Colyseus : Unit it on Events", () => {
   const areas: Area[] = [];
@@ -112,19 +111,23 @@ describe("Colyseus : Unit it on Events", () => {
   describe("Game Engine", () => {
     let player1;
     let player2;
+    const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
 
-    before(async () => {
+    beforeEach(async () => {
       methods.createGame({name: "SuperGameBegins"});
       player1 = new Client("ws://localhost:3000");
       player2 = new Client("ws://localhost:3000");
     });
 
-    after(() => {
-      player1.close();
-      player2.close();
+    afterEach(async () => {
+      return await new Promise((resolve, reject) => {
+        player1.close();
+        player2.close();
+        resolve();
+      });
     });
 
-    it("Should start a game and announce a winner", async () => {
+    it("Should receive player's update ", async () => {
       const listenerPlayer = player1.join("SuperGameBegins", {
         pseudo: "player1",
         lat: 0,
@@ -144,10 +147,107 @@ describe("Colyseus : Unit it on Events", () => {
         });
       });
       await joined;
-      /*listenerPlayer2.state.players.onChange = (player, i) => {
-        console.log("player has been updated");
-        done();
-      };*/
+      const received = new Promise((resolve, reject) => {
+        listenerPlayer2.state.players.onChange = (player, i) => {
+          console.log("player has been updated", player.pseudo);
+          resolve();
+        };
+      });
+      await received;
+    });
+
+    it("Should catch ChaseObject if a player is at the same location of the ChaseObject", async () => {
+      const listenerPlayer = player1.join("SuperGameBegins", {
+        pseudo: "guardian",
+        lat: 1,
+        lon: 1
+      });
+      const listenerPlayer2 = player2.join("SuperGameBegins", {
+        pseudo: "chaser",
+        lat: 0,
+        lon: 0
+      });
+      const joined = new Promise((resolve, reject) => {
+        listenerPlayer.onJoin.add(() => {
+          listenerPlayer2.onJoin.add(() => {
+            listenerPlayer.send({action: "catch", payload: {lat: 1, lon: 1}});
+            resolve();
+          });
+        });
+      });
+      await joined;
+      const received = new Promise((resolve, reject) => {
+        listenerPlayer2.state.onChange = (changes) => {
+          const {value} = changes.filter(
+            (change) => change.field === "guardian"
+          )[0];
+          resolve(value.pseudo);
+        };
+      });
+      const pseudo = await received;
+      assert.equal(pseudo, "guardian");
+    });
+
+    it("Should steal ChaseObject if a player is at the same location of the guardian", async () => {
+      const listenerPlayer = player1.join("SuperGameBegins", {
+        pseudo: "guardian",
+        lat: 1,
+        lon: 1
+      });
+      const listenerPlayer2 = player2.join("SuperGameBegins", {
+        pseudo: "stealer",
+        lat: 1,
+        lon: 1
+      });
+      const joined = new Promise((resolve, reject) => {
+        listenerPlayer2.onJoin.add(() => {
+          listenerPlayer2.send({action: "steal", payload: {lat: 1, lon: 1}});
+          resolve();
+        });
+      });
+      await joined;
+      const received = new Promise((resolve, reject) => {
+        listenerPlayer.state.onChange = (changes) => {
+          const {value} = changes.filter(
+            (change) => change.field === "guardian"
+          )[0];
+          resolve(value.pseudo);
+        };
+      });
+      const pseudo = await received;
+      assert.equal(pseudo, "stealer");
+    });
+
+    it("Should end the game when the timer is finished", async () => {
+      const listenerPlayer = player1.join("SuperGameBegins", {
+        pseudo: "guardian",
+        lat: 1,
+        lon: 1
+      });
+      const listenerPlayer2 = player2.join("SuperGameBegins", {
+        pseudo: "stealer",
+        lat: 1,
+        lon: 1
+      });
+      const joined = new Promise((resolve, reject) => {
+        listenerPlayer2.onJoin.add(() => {
+          listenerPlayer2.send({action: "catch", payload: {lat: 1, lon: 1}});
+          resolve();
+        });
+      });
+      await joined;
+      const received = new Promise((resolve, reject) => {
+        listenerPlayer.state.onChange = (changes) => {
+          console.log(changes);
+          const change = changes.filter(
+            (change) => change.field === "finished"
+          )[0];
+          resolve(change.value);
+        };
+      });
+      // await timeout(300);
+      const finished = await received;
+      assert.equal(finished, true);
     });
   });
 });

@@ -1,34 +1,11 @@
 import {Room, Client} from "colyseus";
-import {Schema, type, ArraySchema, MapSchema} from "@colyseus/schema";
-import History from "../history";
-import Player from "../player";
+import Game from "../game";
 
-class State extends Schema {
-  @type([History])
-  history = new ArraySchema<History>();
-
-  @type({map: Player})
-  players = new MapSchema<Player>();
-
-  createPlayer(id: string, pseudo: string, lat: number, lon: number) {
-    this.players[id] = new Player(pseudo, lat, lon);
-  }
-
-  removePlayer(id: string) {
-    delete this.players[id];
-  }
-
-  movePlayer(id: string, lat: number, lon: number) {
-    /*this.players[id].lat = lat;
-    this.players[id].lon = lon;*/
-  }
-}
-export default class GameInstance extends Room<State> {
+export default class GameInstance extends Room<Game> {
   // When room is initialized
   onInit(options: any) {
-    this.setState(new State());
+    this.setState(new Game(options));
   }
-
   // Checks if a new client is allowed to join. (default: `return true`)
   requestJoin(options: any, isNew: boolean) {
     return true;
@@ -44,12 +21,17 @@ export default class GameInstance extends Room<State> {
   }
 
   // When a client sends a message
-  onMessage(client: Client, data: any) {
+  async onMessage(client: Client, data: any) {
     const {action, payload} = data;
     switch (action) {
       case "move":
-        const {lat, lon} = payload;
-        this.state.movePlayer(client.sessionId, lat, lon);
+        this.state.movePlayer(client.sessionId, payload);
+        break;
+      case "catch":
+        await this.state.catchChaseObject(client.sessionId, payload);
+        break;
+      case "steal":
+        this.state.stealChaseObject(client.sessionId, payload);
         break;
     }
   }
