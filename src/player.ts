@@ -1,10 +1,20 @@
-export default class Player {
-  pseudo: string;
-  location: number[];
+import {Schema, type} from "@colyseus/schema";
 
-  constructor(pseudo_, location_) {
+export default class Player extends Schema {
+  @type("string")
+  pseudo: string;
+
+  @type("number")
+  lat: number;
+
+  @type("number")
+  lon: number;
+
+  constructor(pseudo_: string, lat: number, lon: number) {
+    super();
     this.pseudo = pseudo_;
-    this.location = location_;
+    this.lat = lat;
+    this.lon = lon;
   }
 
   getPseudo() {
@@ -12,10 +22,6 @@ export default class Player {
   }
 
   getLocation() {
-    return this.location;
-  }
-
-  moveTo(newLocation: number[]) {
-    this.location = newLocation;
+    return [this.lat, this.lon];
   }
 }

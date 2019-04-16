@@ -3,9 +3,10 @@ const socketUrl: string = `ws://localhost:${port}`;
 import {Client} from "colyseus.js";
 import Area from "../area";
 import {methods, gameServer} from "../socketServer";
+import {Location} from "../location";
 import {doesNotReject} from "assert";
 
-describe("Colyseus : Unit test on Events", () => {
+describe("Colyseus : Unit it on Events", () => {
   const areas: Area[] = [];
   const bounds: number[][] = [
     [48.8569443, 2.2940138],
@@ -14,7 +15,7 @@ describe("Colyseus : Unit test on Events", () => {
     [48.8539637, 2.3035665]
   ];
 
-  beforeAll(async () => {
+  before(async () => {
     const area = new Area([48.8556475, 2.2986304], bounds, "AreaA");
     const area1 = new Area([48.8556475, 2.2986304], bounds, "AreaB");
     areas.push(area, area1);
@@ -22,10 +23,13 @@ describe("Colyseus : Unit test on Events", () => {
     gameServer.listen(port);
   });
 
-  /*afterAll(() => {
+  after(async () => {
     console.log("shutdown");
-    gameServer.gracefullyShutdown();
-  });*/
+    await new Promise((resolve, reject) => {
+      gameServer.gracefullyShutdown();
+      resolve();
+    });
+  });
 
   describe("Basic Connection", () => {
     let client: Client;
@@ -36,7 +40,7 @@ describe("Colyseus : Unit test on Events", () => {
     afterEach(() => {
       client.close();
     });
-    test("Should check that the socket is connected", (done) => {
+    it("Should check that the socket is connected", (done) => {
       client.onOpen.add(() => {
         done();
       });
@@ -57,7 +61,7 @@ describe("Colyseus : Unit test on Events", () => {
       player1.close();
     });
 
-    test("Players should receive Areas in Discovery mode", async (done) => {
+    it("Players should receive Areas in Discovery mode", async () => {
       const listenerPlayer1 = player1.join("discovery");
       const joined = new Promise((resolve, reject) => {
         listenerPlayer1.onJoin.add(() => {
@@ -76,7 +80,6 @@ describe("Colyseus : Unit test on Events", () => {
         });
       });
       const areas = await getAreas;
-      done();
     });
   });
 
@@ -91,7 +94,7 @@ describe("Colyseus : Unit test on Events", () => {
       player1.close();
     });
 
-    test("Players should join a specific area", async (done) => {
+    it("Players should join a specific area", async () => {
       const specificArea = "AreaA";
       const joinSpecificArea = new Promise((resolve, reject) => {
         const listenerPlayer1 = player1.join(specificArea);
@@ -103,10 +106,52 @@ describe("Colyseus : Unit test on Events", () => {
         });
       });
       await joinSpecificArea;
-      done();
     });
   });
-  /*
+
+  describe("Game Engine", () => {
+    let player1;
+    let player2;
+
+    before(async () => {
+      methods.createGame({name: "SuperGameBegins"});
+      player1 = new Client("ws://localhost:3000");
+      player2 = new Client("ws://localhost:3000");
+    });
+
+    after(() => {
+      player1.close();
+      player2.close();
+    });
+
+    it("Should start a game and announce a winner", async () => {
+      const listenerPlayer = player1.join("SuperGameBegins", {
+        pseudo: "player1",
+        lat: 0,
+        lon: 0
+      });
+      const listenerPlayer2 = player2.join("SuperGameBegins", {
+        pseudo: "player2",
+        lat: 0,
+        lon: 0
+      });
+      const joined = new Promise((resolve, reject) => {
+        listenerPlayer.onJoin.add(() => {
+          listenerPlayer2.onJoin.add(() => {
+            listenerPlayer.send({action: "move", payload: {lat: 1, lon: 1}});
+            resolve();
+          });
+        });
+      });
+      await joined;
+      /*listenerPlayer2.state.players.onChange = (player, i) => {
+        console.log("player has been updated");
+        done();
+      };*/
+    });
+  });
+});
+/*
   describe('Enter a Game Room', () => {
     let player1;
     let player2;
@@ -194,25 +239,4 @@ describe("Colyseus : Unit test on Events", () => {
       await getReadyPlayer1;
       await getReadyPlayer2;
     });
-  });
-  describe('Game Engine', () => {
-    let player1;
-    let player2;
-
-    before(async () => {
-      methods.createGame({ name: 'SuperGameBegins' });
-      player1 = new Client('ws://localhost:3000');
-      player2 = new Client('ws://localhost:3000');
-    });
-
-    after(async () => {
-      player1.close();
-      player2.close();
-    });
-
-    it('Should start a game and announce a winner', async () => {
-      const listenerPlayer = player1.join('SuperGameBegins');
-      const listenerPlayer2 = player2.join('SuperGameBegins');
-    });
   });*/
-});
