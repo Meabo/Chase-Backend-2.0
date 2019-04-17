@@ -23,10 +23,15 @@ export default class Area extends Schema {
   }
 
   getLocation() {
-    return this.location;
+    return this.location.getLocation();
   }
 
   getBounds() {
-    return this.bounds;
+    return [
+      this.bounds[0].getLocation(),
+      this.bounds[1].getLocation(),
+      this.bounds[2].getLocation(),
+      this.bounds[3].getLocation()
+    ];
   }
 }

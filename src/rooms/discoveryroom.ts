@@ -35,7 +35,7 @@ export default class Discovery extends Room<State> {
 
   // When client successfully join the room
   onJoin(client: Client, options: any, auth) {
-    console.log(`${client.sessionId} join Discovery.`);
+    //console.log(`${client.sessionId} join Discovery.`);
     this.state.history.push(
       new History("join", client.sessionId, new Date().getTime())
     );

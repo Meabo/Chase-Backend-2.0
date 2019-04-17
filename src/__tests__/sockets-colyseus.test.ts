@@ -151,7 +151,6 @@ describe("Colyseus : Unit it on Events", () => {
       await joined;
       const received = new Promise((resolve, reject) => {
         listenerPlayer2.state.players.onChange = (player, i) => {
-          console.log("player has been updated", player.pseudo);
           resolve();
         };
       });
@@ -240,7 +239,6 @@ describe("Colyseus : Unit it on Events", () => {
       await joined;
       const received = new Promise((resolve, reject) => {
         listenerPlayer.state.onChange = (changes) => {
-          console.log(changes);
           let change = changes.filter(
             (change) => change.field === "gameFinished"
           )[0];
@@ -251,36 +249,7 @@ describe("Colyseus : Unit it on Events", () => {
       assert.equal(finished, true);
     });
 
-    it("", async () => {
-      const listenerPlayer = player1.join("SuperGameBegins3", {
-        pseudo: "guardian",
-        lat: 1,
-        lon: 1
-      });
-      const listenerPlayer2 = player2.join("SuperGameBegins3", {
-        pseudo: "stealer",
-        lat: 1,
-        lon: 1
-      });
-      const joined = new Promise((resolve, reject) => {
-        listenerPlayer2.onJoin.add(() => {
-          listenerPlayer2.send({action: "catch", payload: {lat: 1, lon: 1}});
-          resolve();
-        });
-      });
-      await joined;
-      const received = new Promise((resolve, reject) => {
-        listenerPlayer.state.onChange = (changes) => {
-          console.log(changes);
-          let change = changes.filter(
-            (change) => change.field === "gameFinished"
-          )[0];
-          if (change.value === true) resolve(change.value);
-        };
-      });
-      const finished = await received;
-      assert.equal(finished, true);
-    });
+    it("", async () => {});
   });
 });
 /*

@@ -11,6 +11,9 @@
     "express": "^4.16.4",
     "firebase": "^5.9.4",
     "mocha": "^6.1.3",
+    "robust-orientation": "^1.1.3",
+    "robust-point-in-polygon": "^1.0.3",
+    "robust-sum": "^1.0.0",
     "rxjs": "^6.4.0"
   },
   "devDependencies": {

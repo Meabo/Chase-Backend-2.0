@@ -15,7 +15,7 @@ export default class GameInstance extends Room<Game> {
 
   // When client successfully join the room
   onJoin(client: Client, options: any, auth) {
-    console.log(`${client.sessionId} join GameInstance.`);
+    //console.log(`${client.sessionId} join GameInstance.`);
     const {pseudo, lat, lon} = options;
     this.state.createPlayer(client.sessionId, pseudo, lat, lon);
   }
@@ -30,6 +30,7 @@ export default class GameInstance extends Room<Game> {
       case "catch":
         await this.state.catchChaseObject(client.sessionId, payload);
         break;
+
       case "steal":
         this.state.stealChaseObject(client.sessionId, payload);
         break;
