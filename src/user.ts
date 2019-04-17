@@ -8,7 +8,7 @@ export default class User {
   };
   private currentLocation: number[];
 
-  constructor(email) {
+  constructor(email: string) {
     this.email = email;
     this.profile = {};
     this.playerProfile = {};
@@ -46,5 +46,3 @@ export default class User {
     return this.playerProfile;
   }
 }
-
-module.exports = User;

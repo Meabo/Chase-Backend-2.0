@@ -1,39 +1,39 @@
-import {firebase} from "firebase";
-
-firebase.initializeApp();
-
-const AuthGateway = {
-  SignUp: (email, password) => {
-    firebase
-      .auth()
-      .createUserWithEmailAndPassword(email, password)
-      .then((result) => true)
-      .catch((error) => {
-        console.log(error.code);
-        console.log(error.message);
-        return false;
-        // ...
-      });
-  },
-  SignIn: (email, password) => {
-    firebase
-      .auth()
-      .signInWithEmailAndPassword(email, password)
-      .then((result) => true)
-      .catch((error) => {
-        console.log(error.code);
-        console.log(error.message);
-        return false;
-        // ...
-      });
-  },
-  SignOut: () => {
-    firebase
-      .auth()
-      .signOut()
-      .then(() => true)
-      .catch((error) => false);
-  }
+import * as firebase from "firebase/app";
+const firebaseConfig = {
+  // ...
 };
 
-exports.AuthGateway = AuthGateway;
+firebase.initializeApp(firebaseConfig);
+
+const AuthGateway = {
+  SignUp: async (email, password) => {
+    try {
+      const result = await firebase
+        .auth()
+        .createUserWithEmailAndPassword(email, password);
+      return result ? true : false;
+    } catch (err) {
+      throw err;
+    }
+  },
+  SignIn: async (email, password) => {
+    try {
+      const result = await firebase
+        .auth()
+        .signInWithEmailAndPassword(email, password);
+
+      return result ? true : false;
+    } catch (err) {
+      throw err;
+    }
+  },
+  SignOut: async () => {
+    try {
+      const result = await firebase.auth().signOut();
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+};
+export default AuthGateway;
