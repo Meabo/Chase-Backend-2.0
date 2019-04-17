@@ -1,15 +1,11 @@
 import app from "express";
 import {createServer} from "http";
 import {Server} from "colyseus";
-
 import AreaRoom from "./rooms/arearoom";
 import Discovery from "./rooms/discoveryroom";
 import GameLobby from "./rooms/gamelobby";
 import GameInstance from "./rooms/gameinstance";
-
 import {eventBus} from "./emitter/emitter";
-import {doesNotReject} from "assert";
-import {cpus} from "os";
 
 export const gameServer = new Server({
   server: createServer(app),

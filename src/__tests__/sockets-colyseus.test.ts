@@ -13,6 +13,7 @@ describe("Colyseus : Unit it on Events", () => {
     [48.8523546, 2.3012814],
     [48.8539637, 2.3035665]
   ];
+  const loc = [48.8556475, 2.2986304];
 
   before(async () => {
     const area = new Area([48.8556475, 2.2986304], bounds, "AreaA");
@@ -112,10 +113,16 @@ describe("Colyseus : Unit it on Events", () => {
     let player1;
     let player2;
     const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
-    let i = 0;
+    let i = 1;
 
     beforeEach(async () => {
-      methods.createGame({name: "SuperGameBegins" + i});
+      methods.createGame({
+        name: "SuperGameBegins" + i,
+        chaseObjectLoc: [1, 1],
+        gameId: i + "",
+        arealoc: loc,
+        bounds
+      });
       player1 = new Client("ws://localhost:3000");
       player2 = new Client("ws://localhost:3000");
       i++;
@@ -130,12 +137,12 @@ describe("Colyseus : Unit it on Events", () => {
     });
 
     it("Should receive player's update ", async () => {
-      const listenerPlayer = player1.join("SuperGameBegins0", {
+      const listenerPlayer = player1.join("SuperGameBegins1", {
         pseudo: "player1",
         lat: 0,
         lon: 0
       });
-      const listenerPlayer2 = player2.join("SuperGameBegins0", {
+      const listenerPlayer2 = player2.join("SuperGameBegins1", {
         pseudo: "player2",
         lat: 0,
         lon: 0
@@ -158,12 +165,12 @@ describe("Colyseus : Unit it on Events", () => {
     });
 
     it("Should catch ChaseObject if a player is at the same location of the ChaseObject", async () => {
-      const listenerPlayer = player1.join("SuperGameBegins1", {
+      const listenerPlayer = player1.join("SuperGameBegins2", {
         pseudo: "guardian",
         lat: 1,
         lon: 1
       });
-      const listenerPlayer2 = player2.join("SuperGameBegins1", {
+      const listenerPlayer2 = player2.join("SuperGameBegins2", {
         pseudo: "chaser",
         lat: 0,
         lon: 0
@@ -190,12 +197,12 @@ describe("Colyseus : Unit it on Events", () => {
     });
 
     it("Should steal ChaseObject if a player is at the same location of the guardian", async () => {
-      const listenerPlayer = player1.join("SuperGameBegins1", {
+      const listenerPlayer = player1.join("SuperGameBegins2", {
         pseudo: "guardian",
         lat: 1,
         lon: 1
       });
-      const listenerPlayer2 = player2.join("SuperGameBegins1", {
+      const listenerPlayer2 = player2.join("SuperGameBegins2", {
         pseudo: "stealer",
         lat: 1,
         lon: 1
@@ -220,12 +227,12 @@ describe("Colyseus : Unit it on Events", () => {
     });
 
     it("Should end the game when the timer is finished", async () => {
-      const listenerPlayer = player1.join("SuperGameBegins2", {
+      const listenerPlayer = player1.join("SuperGameBegins4", {
         pseudo: "guardian",
         lat: 1,
         lon: 1
       });
-      const listenerPlayer2 = player2.join("SuperGameBegins2", {
+      const listenerPlayer2 = player2.join("SuperGameBegins4", {
         pseudo: "stealer",
         lat: 1,
         lon: 1

@@ -28,11 +28,10 @@ export default class GameInstance extends Room<Game> {
         this.state.movePlayer(client.sessionId, payload);
         break;
       case "catch":
-        await this.state.catchChaseObject(client.sessionId, payload);
+        await this.state.catchChaseObject(client.sessionId);
         break;
-
       case "steal":
-        this.state.stealChaseObject(client.sessionId, payload);
+        this.state.stealChaseObject(client.sessionId);
         break;
     }
   }

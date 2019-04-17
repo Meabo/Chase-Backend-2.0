@@ -141,3 +141,15 @@ export function robustPointInPolygon(vs: number[][], point: number[]) {
   }
   return 2 * inside - 1;
 }
+
+export function getRandomLocationInsidePolygon(polygon: number[][]) {
+  const r = Math.random();
+  const t = Math.random();
+  const ABX = polygon[1][1] - polygon[0][1];
+  const ABY = polygon[1][0] - polygon[0][0];
+  const ADX = polygon[3][1] - polygon[0][1];
+  const ADY = polygon[3][0] - polygon[0][0];
+  const newlocx = ABX * r + ADX * t + polygon[0][1];
+  const newlocy = ABY * r + ADY * t + polygon[0][0];
+  return {latitude: newlocy, longitude: newlocx};
+}

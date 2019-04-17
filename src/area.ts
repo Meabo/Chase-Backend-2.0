@@ -1,5 +1,6 @@
 import {Schema, type, ArraySchema} from "@colyseus/schema";
 import {Location} from "../src/location";
+import {robustPointInPolygon} from "./utils/locationutils";
 
 export default class Area extends Schema {
   @type(Location)
@@ -16,6 +17,15 @@ export default class Area extends Schema {
     this.location = new Location(location[0], location[1]);
     bounds.map((bound) => this.bounds.push(new Location(bound[0], bound[1])));
     this.name = name;
+  }
+
+  isInside(): boolean {
+    const result = robustPointInPolygon(
+      this.getBounds(),
+      this.location.getLocation()
+    );
+    if (result === -1 || result === 0) return true;
+    return false;
   }
 
   getName() {
