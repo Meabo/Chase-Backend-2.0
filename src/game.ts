@@ -2,8 +2,8 @@ import {Schema, type, ArraySchema, MapSchema} from "@colyseus/schema";
 import History from "./history";
 import Player from "./player";
 import ChaseObject from "./chaseobject";
-import {timer, pipe, from, Observable} from "rxjs";
-const {take, finalize, mergeMap} = require("rxjs/operators");
+import {timer} from "rxjs";
+const {take, finalize} = require("rxjs/operators");
 
 export default class Game extends Schema {
   @type([History])
@@ -12,8 +12,10 @@ export default class Game extends Schema {
   @type({map: Player})
   players = new MapSchema<Player>();
 
+  private alreadyGuardian: boolean = false;
+
   @type("boolean")
-  finished = false;
+  gameFinished: boolean = false;
 
   @type(ChaseObject)
   chaseObject: ChaseObject;
@@ -28,9 +30,7 @@ export default class Game extends Schema {
       .pipe(
         take(limit),
         finalize(() => {
-          console.log("timer finished");
-          this.finished = true;
-          console.log("finished");
+          this.gameFinished = true;
         })
       )
       .subscribe();
@@ -41,15 +41,17 @@ export default class Game extends Schema {
   }
 
   async catchChaseObject(id: string, payload: any) {
-    const {lat, lon} = payload;
-    if (this.chaseObject.lat === lat && this.chaseObject.lon === lon) {
-      const {pseudo, lat, lon} = this.players[id];
-      this.finished = true;
-      this.guardian = new Player(pseudo, lat, lon);
-      //await this.BeginTimer(1, 200);
-      return true;
+    if (this.alreadyGuardian === false) {
+      const {lat, lon} = payload;
+      if (this.chaseObject.lat === lat && this.chaseObject.lon === lon) {
+        const {pseudo, lat, lon} = this.players[id];
+        this.guardian = new Player(pseudo, lat, lon);
+        this.alreadyGuardian = true;
+        await this.BeginTimer(1, 100); // Value to change with a real timer
+        return true;
+      }
+      return false;
     }
-    return false;
   }
 
   stealChaseObject(id: string, payload: any) {
