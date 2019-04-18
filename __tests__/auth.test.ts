@@ -1,7 +1,7 @@
 import {assert, expect} from "chai";
 import * as sinon from "sinon";
-import User from "../user";
-import AuthGateway from "../firebase";
+import User from "../src/user";
+import AuthGateway from "../src/firebase";
 
 describe("Authentication", () => {
   let new_user;

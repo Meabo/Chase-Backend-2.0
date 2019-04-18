@@ -32,4 +32,16 @@ export default class Action extends Schema {
     this.timestamp = timestamp;
     if (action === "steal") this.pseudoStealed = pseudoStealed;
   }
+
+  getAction() {
+    return this.action;
+  }
+
+  getStatus() {
+    return this.status;
+  }
+
+  getPseudo() {
+    return this.pseudo;
+  }
 }

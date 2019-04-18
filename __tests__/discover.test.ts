@@ -1,7 +1,7 @@
 import {assert, expect} from "chai";
-import Area from "../area";
-import User from "../user";
-import Discover from "../discover";
+import Area from "../src/area";
+import User from "../src/user";
+import Discover from "../src/discover";
 
 describe("Discover", () => {
   const discover = new Discover();

@@ -1,11 +1,11 @@
-import app from "express";
+import * as app from "express";
 import {createServer} from "http";
 import {Server} from "colyseus";
-import AreaRoom from "./rooms/arearoom";
-import Discovery from "./rooms/discoveryroom";
-import GameLobby from "./rooms/gamelobby";
-import GameInstance from "./rooms/gameinstance";
-import {eventBus} from "./emitter/emitter";
+import AreaRoom from "../src/socket-rooms/arearoom";
+import Discovery from "../src/socket-rooms/discoveryroom";
+import GameLobby from "../src/socket-rooms/gamelobby";
+import GameInstance from "../src/socket-rooms/gameinstance";
+import {eventBus} from "../src/utils/emitter/emitter";
 
 export const gameServer = new Server({
   server: createServer(app),

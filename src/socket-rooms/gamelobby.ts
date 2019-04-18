@@ -1,5 +1,5 @@
 import {Room, Client} from "colyseus";
-import {eventBus} from "../emitter/emitter";
+import {eventBus} from "../utils/emitter/emitter";
 
 export default class GameLobby extends Room {
   // When room is initialized

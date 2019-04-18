@@ -1,5 +1,4 @@
 import {Room, Client} from "colyseus";
-import {eventBus} from "../emitter/emitter";
 import {Schema, type, ArraySchema} from "@colyseus/schema";
 import Area from "../area";
 import History from "../history";
@@ -8,23 +7,23 @@ class State extends Schema {
   @type([History])
   history = new ArraySchema<History>();
 
-  @type(Area)
-  area: Area;
+  @type([Area])
+  areas = new ArraySchema<Area>();
 
-  constructor(area: Area) {
+  constructor(areas: Area[]) {
     super();
-    this.area = area;
+    this.areas.push(...areas);
   }
 }
 
-export default class AreaRoom extends Room<State> {
+export default class Discovery extends Room<State> {
   // When room is initialized
   onInit(options: any) {
-    //let socketServerInstance = new SocketServer().getInstance();
-    //console.log(this);
-    this.setState(new State(options.area));
+    this.setState(new State(options.areas));
   }
-
+  async onAuth(options: any) {
+    return {success: true};
+  }
   // Checks if a new client is allowed to join. (default: `return true`)
   requestJoin(options: any, isNew: boolean) {
     return true;
@@ -35,7 +34,7 @@ export default class AreaRoom extends Room<State> {
 
   // When client successfully join the room
   onJoin(client: Client, options: any, auth) {
-    //console.log(`${client.sessionId} join Area.`);
+    //console.log(`${client.sessionId} join Discovery.`);
     this.state.history.push(
       new History("join", client.sessionId, new Date().getTime())
     );
@@ -45,11 +44,10 @@ export default class AreaRoom extends Room<State> {
   onMessage(client: Client, data: any) {
     const {action, roomName} = data;
     switch (action) {
-      case "getArea":
-        this.send(client, this.state.area);
+      case "getAreas":
+        this.send(client, this.state.areas);
         break;
-      case "joingameroom":
-        eventBus.sendEvent("createGameLobby", data);
+      case "leaveDiscovery":
         this.onLeave(client, true);
         break;
     }

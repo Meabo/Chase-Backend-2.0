@@ -1,8 +1,8 @@
 const port: number = 3000;
 const socketUrl: string = `ws://localhost:${port}`;
 import {Client} from "colyseus.js";
-import Area from "../area";
-import {methods, gameServer} from "../socketServer";
+import Area from "../src/area";
+import {methods, gameServer} from "../servers/socketServer";
 import {assert, expect} from "chai";
 
 describe("Colyseus : Unit it on Events", () => {

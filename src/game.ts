@@ -30,7 +30,16 @@ export default class Game extends Schema {
   private alreadyGuardian: boolean = false;
   private gameId: string;
 
-  async BeginTimer(limit, ticker) {
+  constructor(options: any) {
+    super();
+    const {chaseObjectLoc, gameId, arealoc, bounds} = options;
+    this.chaseObject = new ChaseObject(chaseObjectLoc[0], chaseObjectLoc[1]);
+    this.timer = null;
+    this.gameId = gameId;
+    this.area = new Area(arealoc, bounds, "area");
+  }
+
+  async BeginTimer(limit: number, ticker: number) {
     this.timer = timer(0, ticker)
       .pipe(
         take(limit),
@@ -47,14 +56,13 @@ export default class Game extends Schema {
 
   async catchChaseObject(id: string) {
     let result = false;
+    const {pseudo, lat, lon} = this.players[id];
     if (this.alreadyGuardian === false) {
-      const {pseudo, lat, lon} = this.players[id];
       if (this.chaseObject.lat === lat && this.chaseObject.lon === lon) {
         this.guardian = new Player(pseudo, lat, lon);
         this.alreadyGuardian = true;
         result = true;
         await this.BeginTimer(1, 100); // Value to change with a real timer
-        return true;
       }
       this.history.addAction(this.gameId, id, "catch", {
         status: result ? "success" : "failure",
@@ -62,9 +70,8 @@ export default class Game extends Schema {
         location: [lat, lon],
         timestamp: new Date().getTime()
       });
-      return false;
     }
-    return false;
+    return result;
   }
 
   stealChaseObject(id: string) {
@@ -74,7 +81,6 @@ export default class Game extends Schema {
     if (this.guardian.lat === lat && this.guardian.lon === lon) {
       this.guardian = new Player(pseudo, lat, lon);
       result = true;
-      return result;
     }
     this.history.addAction(this.gameId, id, "steal", {
       status: result ? "success" : "failure",
@@ -83,7 +89,7 @@ export default class Game extends Schema {
       location: [lat, lon],
       timestamp: new Date().getTime()
     });
-    return false;
+    return result;
   }
 
   removePlayer(id: string) {
@@ -95,6 +101,8 @@ export default class Game extends Schema {
       this.area.getBounds()
     );
     this.chaseObject = new ChaseObject(latitude, longitude);
+    this.guardian = null;
+    this.alreadyGuardian = false;
   }
 
   movePlayer(id: string, payload: any) {
@@ -109,23 +117,20 @@ export default class Game extends Schema {
       [newlat, newlon],
       new Date().getTime()
     );
-
+    if (
+      this.alreadyGuardian &&
+      this.players[id].pseudo === this.guardian.pseudo
+    ) {
+      this.guardian.lat = newlat;
+      this.guardian.lon = newlon;
+    }
     if (
       this.alreadyGuardian &&
       this.players[id].pseudo === this.guardian.pseudo &&
-      !this.area.isInside()
+      !this.area.isInside([newlat, newlon])
     ) {
       this.generateAnotherPositionForChaseObject();
     }
-  }
-
-  constructor(options: any) {
-    super();
-    const {chaseObjectLoc, gameId, arealoc, bounds} = options;
-    this.chaseObject = new ChaseObject(chaseObjectLoc[0], chaseObjectLoc[1]);
-    this.timer = null;
-    this.gameId = gameId;
-    this.area = new Area(arealoc, bounds, "area");
   }
 
   getGuardian() {
@@ -133,6 +138,10 @@ export default class Game extends Schema {
   }
 
   getHistory() {
-    return this.history.getHistory();
+    return this.history;
+  }
+
+  getChaseObjectLocation() {
+    return this.chaseObject.getLocation();
   }
 }

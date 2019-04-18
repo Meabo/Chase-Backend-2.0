@@ -1,4 +1,4 @@
-import AreaRepository from "./Adapters/AreaRepository";
+import AreaRepository from "./adapters/AreaRepository";
 import {distanceByLoc} from "./utils/locationutils";
 import User from "./user";
 import Area from "./area";

@@ -27,4 +27,16 @@ export default class Move extends Schema {
     this.newlocation = new Location(newLocation[0], newLocation[1]);
     this.timestamp = timestamp;
   }
+
+  getPrevLocation() {
+    return this.prevlocation.getLocation();
+  }
+
+  getNewLocation() {
+    return this.newlocation.getLocation();
+  }
+
+  getPlayerId() {
+    return this.playerId;
+  }
 }

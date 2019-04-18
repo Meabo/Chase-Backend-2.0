@@ -19,11 +19,8 @@ export default class Area extends Schema {
     this.name = name;
   }
 
-  isInside(): boolean {
-    const result = robustPointInPolygon(
-      this.getBounds(),
-      this.location.getLocation()
-    );
+  isInside(loc: number[]): boolean {
+    const result = robustPointInPolygon(this.getBounds(), loc);
     if (result === -1 || result === 0) return true;
     return false;
   }

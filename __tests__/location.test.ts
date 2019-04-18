@@ -1,7 +1,7 @@
 import {assert, expect} from "chai";
-import Player from "../player";
-import Area from "../area";
-import {distance, robustPointInPolygon} from "../utils/locationutils";
+import Player from "../src/player";
+import Area from "../src/area";
+import {distance, robustPointInPolygon} from "../src/utils/locationutils";
 
 describe("Location engine", () => {
   let player: Player;

@@ -10,6 +10,9 @@ export default class Player extends Schema {
   @type("number")
   lon: number;
 
+  @type("string")
+  playerId: string = "";
+
   constructor(pseudo_: string, lat: number, lon: number) {
     super();
     this.pseudo = pseudo_;
@@ -23,5 +26,9 @@ export default class Player extends Schema {
 
   getLocation() {
     return [this.lat, this.lon];
+  }
+
+  getPlayerId() {
+    return this.playerId;
   }
 }
