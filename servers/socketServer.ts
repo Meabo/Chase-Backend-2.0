@@ -5,6 +5,8 @@ import AreaRoom from "../src/socket-rooms/arearoom";
 import Discovery from "../src/socket-rooms/discoveryroom";
 import GameLobby from "../src/socket-rooms/gamelobby";
 import GameInstance from "../src/socket-rooms/gameinstance";
+import GameInstanceSolo from "../src/socket-rooms/gameinstancesolo";
+
 import {eventBus} from "../src/utils/emitter/emitter";
 
 export const gameServer = new Server({
@@ -17,7 +19,7 @@ export const gameServer = new Server({
   }
 });
 
-export const methods: any = {
+export const methods = {
   getGameServer: () => gameServer,
   init: async (areas) => {
     await methods.createDiscoveryRoom(areas);
@@ -51,6 +53,14 @@ export const methods: any = {
   },
   createGame: (data) => {
     gameServer.register(data.name, GameInstance, data);
+  },
+  createSoloGame: async (name, options) => {
+    try {
+      await gameServer.register(name, GameInstanceSolo, options);
+      console.log("Solo game created");
+    } catch (err) {
+      console.log("Error creating Solo Game room", err);
+    }
   }
 };
 

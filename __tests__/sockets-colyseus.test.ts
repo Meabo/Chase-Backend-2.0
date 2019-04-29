@@ -1,4 +1,4 @@
-const port: number = 3000;
+const port: number = 5000;
 const socketUrl: string = `ws://localhost:${port}`;
 import {Client} from "colyseus.js";
 import Area from "../src/area";
@@ -87,7 +87,7 @@ describe("Colyseus : Unit it on Events", () => {
     let player1;
 
     beforeEach(() => {
-      player1 = new Client("ws://localhost:3000");
+      player1 = new Client(`ws://localhost:${port}`);
     });
 
     afterEach(() => {
@@ -123,8 +123,8 @@ describe("Colyseus : Unit it on Events", () => {
         arealoc: loc,
         bounds
       });
-      player1 = new Client("ws://localhost:3000");
-      player2 = new Client("ws://localhost:3000");
+      player1 = new Client(`ws://localhost:${port}`);
+      player2 = new Client(`ws://localhost:${port}`);
       i++;
     });
 
@@ -178,7 +178,7 @@ describe("Colyseus : Unit it on Events", () => {
       const joined = new Promise((resolve, reject) => {
         listenerPlayer.onJoin.add(() => {
           listenerPlayer2.onJoin.add(() => {
-            listenerPlayer.send({action: "catch", payload: {lat: 1, lon: 1}});
+            listenerPlayer.send({action: "catch"});
             resolve();
           });
         });
@@ -189,7 +189,7 @@ describe("Colyseus : Unit it on Events", () => {
           const {value} = changes.filter(
             (change) => change.field === "guardian"
           )[0];
-          resolve(value.pseudo);
+          if (value.pseudo) resolve(value.pseudo);
         };
       });
       const pseudo = await received;
@@ -209,7 +209,7 @@ describe("Colyseus : Unit it on Events", () => {
       });
       const joined = new Promise((resolve, reject) => {
         listenerPlayer2.onJoin.add(() => {
-          listenerPlayer2.send({action: "steal", payload: {lat: 1, lon: 1}});
+          listenerPlayer2.send({action: "steal"});
           resolve();
         });
       });
@@ -219,44 +219,12 @@ describe("Colyseus : Unit it on Events", () => {
           const {value} = changes.filter(
             (change) => change.field === "guardian"
           )[0];
-          resolve(value.pseudo);
+          if (value.pseudo) resolve(value.pseudo);
         };
       });
       const pseudo = await received;
       assert.equal(pseudo, "stealer");
     });
-
-    it("Should end the game when the timer is finished", async () => {
-      const listenerPlayer = player1.join("SuperGameBegins4", {
-        pseudo: "guardian",
-        lat: 1,
-        lon: 1
-      });
-      const listenerPlayer2 = player2.join("SuperGameBegins4", {
-        pseudo: "stealer",
-        lat: 1,
-        lon: 1
-      });
-      const joined = new Promise((resolve, reject) => {
-        listenerPlayer2.onJoin.add(() => {
-          listenerPlayer2.send({action: "catch", payload: {lat: 1, lon: 1}});
-          resolve();
-        });
-      });
-      await joined;
-      const received = new Promise((resolve, reject) => {
-        listenerPlayer.state.onChange = (changes) => {
-          let change = changes.filter(
-            (change) => change.field === "gameFinished"
-          )[0];
-          if (change.value === true) resolve(change.value);
-        };
-      });
-      const finished = await received;
-      assert.equal(finished, true);
-    });
-
-    it("", async () => {});
   });
 });
 /*

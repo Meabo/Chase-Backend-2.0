@@ -35,8 +35,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node ./app.ts",
-    "start": "nodemon ./dist/server.js",
+    "start": "ts-node ./app.ts",
+    "dev": "nodemon",
     "prod": "npm run build && npm run start",
     "test-jest": "jest",
     "test": "mocha -r ts-node/register __tests__/*"

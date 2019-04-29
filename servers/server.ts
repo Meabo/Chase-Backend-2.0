@@ -6,7 +6,7 @@ import * as mongoose from "mongoose";
 class Server {
   public app: express.Application = express();
   public routePrv: Routes = new Routes();
-  public mongoUrl: string = "mongodb://localhost:27017/chase-db";
+  public mongoUrl: string = "mongodb://localhost:27017/Chase";
 
   constructor() {
     this.config();
@@ -22,8 +22,15 @@ class Server {
   }
 
   private mongoSetup(): void {
-    mongoose.Promise = global.Promise;
-    mongoose.connect(this.mongoUrl, {useNewUrlParser: true});
+    mongoose
+      .connect(this.mongoUrl, {useNewUrlParser: true})
+      .then(() => {
+        console.log("MongoDB connected…");
+        mongoose.connection.db.listCollections().toArray(function(err, names) {
+          //console.log(names); // [{ name: 'dbname.myCollection' }]
+        });
+      })
+      .catch((err) => console.log(err));
   }
 }
 

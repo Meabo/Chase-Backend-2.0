@@ -5,6 +5,7 @@ import ChaseObject from "./chaseobject";
 import {timer} from "rxjs";
 import Area from "./area";
 import {
+  distanceByLoc,
   robustPointInPolygon,
   getRandomLocationInsidePolygon
 } from "./utils/locationutils";
@@ -39,17 +40,6 @@ export default class Game extends Schema {
     this.area = new Area(arealoc, bounds, "area");
   }
 
-  async BeginTimer(limit: number, ticker: number) {
-    this.timer = timer(0, ticker)
-      .pipe(
-        take(limit),
-        finalize(() => {
-          this.gameFinished = true;
-        })
-      )
-      .subscribe();
-  }
-
   createPlayer(id: string, pseudo: string, lat: number, lon: number) {
     this.players[id] = new Player(pseudo, lat, lon);
   }
@@ -58,11 +48,17 @@ export default class Game extends Schema {
     let result = false;
     const {pseudo, lat, lon} = this.players[id];
     if (this.alreadyGuardian === false) {
-      if (this.chaseObject.lat === lat && this.chaseObject.lon === lon) {
+      const distance = distanceByLoc(
+        [lat, lon],
+        this.chaseObject.getLocation()
+      );
+      if (distance < 10) {
+        // in meters
+        console.log("Catch happened");
         this.guardian = new Player(pseudo, lat, lon);
         this.alreadyGuardian = true;
         result = true;
-        await this.BeginTimer(1, 100); // Value to change with a real timer
+        //await this.BeginTimer(1, 100); // Value to change with a real timer
       }
       this.history.addAction(this.gameId, id, "catch", {
         status: result ? "success" : "failure",
@@ -76,9 +72,13 @@ export default class Game extends Schema {
 
   stealChaseObject(id: string) {
     const {pseudo, lat, lon} = this.players[id];
-    const guardianPseudo = this.guardian.pseudo;
+    const {pseudo: guardianPseudo} = this.guardian;
     let result = false;
-    if (this.guardian.lat === lat && this.guardian.lon === lon) {
+    const distance = distanceByLoc(
+      this.players[id].getLocation(),
+      this.guardian.getLocation()
+    );
+    if (distance < 10) {
       this.guardian = new Player(pseudo, lat, lon);
       result = true;
     }
@@ -106,7 +106,7 @@ export default class Game extends Schema {
   }
 
   movePlayer(id: string, payload: any) {
-    const {pseudo, lat, lon} = this.players[id];
+    const {lat, lon} = this.players[id];
     const {lat: newlat, lon: newlon} = payload;
     this.players[id].lat = newlat;
     this.players[id].lon = newlon;

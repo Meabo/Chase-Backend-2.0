@@ -1,58 +1,20 @@
 import * as mongoose from "mongoose";
-import {AreaSchema} from "../models/areas";
+import {findAllAreas, findAreaById} from "../models/areas";
 import {Request, Response} from "express";
 
-const Areas = mongoose.model("Areas", AreaSchema);
-
 export class AreaController {
-  public addNewArea(req: Request, res: Response) {
-    let newContact = new Areas(req.body);
-    newContact.save((err, contact) => {
-      if (err) {
-        res.send(err);
-      }
-      res.json(contact);
-    });
+  public async getAreas(req: Request, res: Response) {
+    const {lat, lng, limit} = req.query;
+    findAllAreas(lat, lng, limit)
+      .then((areas) => {
+        res.status(200).send(areas);
+      })
+      .catch((error) => res.status(501).send(error));
   }
 
-  public getAreas(req: Request, res: Response) {
-    Areas.find({}, (err, contact) => {
-      if (err) {
-        res.send(err);
-      }
-      res.json(contact);
-    });
-  }
-
-  public getAreaWithId(req: Request, res: Response) {
-    Areas.findById(req.params.contactId, (err, contact) => {
-      if (err) {
-        res.send(err);
-      }
-      res.json(contact);
-    });
-  }
-
-  public updateArea(req: Request, res: Response) {
-    Areas.findOneAndUpdate(
-      {_id: req.params.contactId},
-      req.body,
-      {new: true},
-      (err, area) => {
-        if (err) {
-          res.send(err);
-        }
-        res.json(area);
-      }
-    );
-  }
-
-  public deleteArea(req: Request, res: Response) {
-    Areas.remove({_id: req.params.contactId}, (err, contact) => {
-      if (err) {
-        res.send(err);
-      }
-      res.json({message: "Successfully deleted contact!"});
-    });
+  public async getAreaWithId(req: Request, res: Response) {
+    findAreaById(req.params.id)
+      .then((area) => res.status(200).send(area))
+      .catch((error) => res.status(501).send(error));
   }
 }
