@@ -20,9 +20,18 @@ export default class Action extends Schema {
   @type("string")
   private pseudoStealed?: string;
 
+  private chaseObjectLocation: number[];
+
   constructor(gameId: string, playerId: string, action: string, payload: any) {
     super();
-    const {status, pseudo, pseudoStealed, location, timestamp} = payload;
+    const {
+      status,
+      pseudo,
+      pseudoStealed,
+      location,
+      timestamp,
+      chaseObjectLocation
+    } = payload;
     this.gameId = gameId;
     this.playerId = playerId;
     this.status = status;
@@ -30,6 +39,7 @@ export default class Action extends Schema {
     this.action = action;
     this.location = new Location(location[0], location[1]);
     this.timestamp = timestamp;
+    this.chaseObjectLocation = chaseObjectLocation;
     if (action === "steal") this.pseudoStealed = pseudoStealed;
   }
 
@@ -43,5 +53,17 @@ export default class Action extends Schema {
 
   getPseudo() {
     return this.pseudo;
+  }
+
+  getLocation() {
+    return this.location.getLocation();
+  }
+
+  getTimestamp() {
+    return this.timestamp;
+  }
+
+  getChaseObjectLocation() {
+    return this.chaseObjectLocation;
   }
 }

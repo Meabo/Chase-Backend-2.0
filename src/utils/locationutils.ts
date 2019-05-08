@@ -1,4 +1,5 @@
 import orient from "./orientation";
+const kmInMeters = 1000;
 
 export function distance(lat1, lon1, lat2, lon2) {
   if (lat1 === lat2 && lon1 === lon2) {
@@ -11,7 +12,7 @@ export function distance(lat1, lon1, lat2, lon2) {
     c((lat2 - lat1) * p) / 2 +
     (c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p))) / 2;
 
-  return 12742 * Math.asin(Math.sqrt(a)); // 2 * R; R = 6371 km
+  return 12742 * Math.asin(Math.sqrt(a)) * 1000; // 2 * R; R = 6371 km
 }
 
 export function distanceByLoc(locA, locB) {
@@ -25,7 +26,7 @@ export function distanceByLoc(locA, locB) {
     c((locB[0] - locA[0]) * p) / 2 +
     (c(locA[0] * p) * c(locB[0] * p) * (1 - c((locB[1] - locA[1]) * p))) / 2;
 
-  return 12742 * Math.asin(Math.sqrt(a)); // 2 * R; R = 6371 km
+  return 12742 * Math.asin(Math.sqrt(a)) * 1000; // 2 * R; R = 6371 km
 }
 
 export function robustPointInPolygon(vs: number[][], point: number[]) {

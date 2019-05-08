@@ -13,12 +13,16 @@ export default class Move extends Schema {
   @type("number")
   private timestamp: number;
 
+  @type("number")
+  private speed: number;
+
   constructor(
     gameId: string,
     playerId: string,
     prevLocation: number[],
     newLocation: number[],
-    timestamp: number
+    timestamp: number,
+    speed: number
   ) {
     super();
     this.gameId = gameId;
@@ -26,6 +30,7 @@ export default class Move extends Schema {
     this.prevlocation = new Location(prevLocation[0], prevLocation[1]);
     this.newlocation = new Location(newLocation[0], newLocation[1]);
     this.timestamp = timestamp;
+    this.speed = speed;
   }
 
   getPrevLocation() {
@@ -38,5 +43,13 @@ export default class Move extends Schema {
 
   getPlayerId() {
     return this.playerId;
+  }
+
+  getSpeed() {
+    return this.speed;
+  }
+
+  getTimestamp() {
+    return this.timestamp;
   }
 }

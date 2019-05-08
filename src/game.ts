@@ -107,7 +107,7 @@ export default class Game extends Schema {
 
   movePlayer(id: string, payload: any) {
     const {lat, lon} = this.players[id];
-    const {lat: newlat, lon: newlon} = payload;
+    const {lat: newlat, lon: newlon, speed} = payload;
     this.players[id].lat = newlat;
     this.players[id].lon = newlon;
     this.history.addMove(
@@ -115,7 +115,8 @@ export default class Game extends Schema {
       id,
       [lat, lon],
       [newlat, newlon],
-      new Date().getTime()
+      new Date().getTime(),
+      speed
     );
     if (
       this.alreadyGuardian &&

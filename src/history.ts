@@ -13,14 +13,16 @@ export default class History extends Schema {
     playerId: string,
     prevLocation: number[],
     newLocation: number[],
-    timestamp: number
+    timestamp: number,
+    speed: number
   ) {
     const move = new Move(
       gameId,
       playerId,
       prevLocation,
       newLocation,
-      timestamp
+      timestamp,
+      speed
     );
     this.moves.push(move);
   }

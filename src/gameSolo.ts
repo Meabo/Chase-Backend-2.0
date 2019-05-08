@@ -10,15 +10,20 @@ import {
   getRandomLocationInsidePolygon
 } from "./utils/locationutils";
 const {take, finalize} = require("rxjs/operators");
+import {getResultsSolo} from "./resultsSolo";
 
 export default class GameSolo extends Schema {
-  @type(History)
   private history: History = new History();
+
   @type(Player)
   player: Player;
 
   @type("boolean")
   private gameFinished: boolean = false;
+
+  @type("number")
+  score: number = 0;
+
   @type(ChaseObject)
   chaseObject: ChaseObject;
 
@@ -27,8 +32,10 @@ export default class GameSolo extends Schema {
 
   private gameId: string;
   options = {
-    range: 20
+    range: 1000, // in Meters
+    pointUnity: 100
   };
+
   constructor(options: any) {
     super();
     const {chaseObjectLoc, gameId, arealoc, bounds} = options;
@@ -39,17 +46,29 @@ export default class GameSolo extends Schema {
 
   createPlayer(id: string, pseudo: string, lat: number, lon: number) {
     this.player = new Player(pseudo, lat, lon);
+    console.log("Player created");
+    this.history.addMove(
+      this.gameId,
+      id,
+      [lat, lon],
+      [lat, lon],
+      new Date().getTime(),
+      0
+    );
   }
 
   async catchChaseObject(id: string) {
     let result = false;
     const {pseudo, lat, lon} = this.player;
-    const distance = distanceByLoc([lat, lon], this.chaseObject.getLocation());
+    const chaseObjectLocation = this.chaseObject.getLocation();
+    console.log("CatchObject", pseudo, lat, lon);
+    const distance = distanceByLoc([lat, lon], chaseObjectLocation);
     console.log("Distance catch", distance);
     if (distance < this.options.range) {
       // in meters
       console.log("Catch success");
       result = true;
+      this.score += 100;
       this.generateAnotherPositionForChaseObject();
       // Value to change with a real timer
     }
@@ -57,7 +76,8 @@ export default class GameSolo extends Schema {
       status: result ? "success" : "failure",
       pseudo,
       location: [lat, lon],
-      timestamp: new Date().getTime()
+      timestamp: new Date().getTime(),
+      chaseObjectLocation: chaseObjectLocation
     });
     return result;
   }
@@ -75,7 +95,7 @@ export default class GameSolo extends Schema {
 
   movePlayer(id: string, payload: any) {
     const {lat, lon} = this.player;
-    const {lat: newlat, lon: newlon} = payload;
+    const {lat: newlat, lon: newlon, speed} = payload;
     this.player.lat = newlat;
     this.player.lon = newlon;
     this.history.addMove(
@@ -83,9 +103,14 @@ export default class GameSolo extends Schema {
       id,
       [lat, lon],
       [newlat, newlon],
-      new Date().getTime()
+      new Date().getTime(),
+      speed
     );
     console.log("Move : Player", id, newlat, newlon);
+  }
+
+  getResult() {
+    return getResultsSolo(this.history, this.options.pointUnity);
   }
 
   getHistory() {
