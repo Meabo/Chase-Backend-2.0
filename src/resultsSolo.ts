@@ -9,8 +9,9 @@ export const getResultsSolo = (history: History, pointUnity: number) => {
 
   const totalDistance = moves.reduce(
     (acc, move: Move) =>
-      acc + distanceByLoc(move.getPrevLocation(), move.getNewLocation()),
-    0
+    {
+        return acc + distanceByLoc(move.getPrevLocation(), move.getNewLocation());
+    },0
   );
   const totalCatches = actions
     .filter((action: Action) => {

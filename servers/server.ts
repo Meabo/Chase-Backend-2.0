@@ -1,12 +1,12 @@
-import * as express from "express";
-import * as bodyParser from "body-parser";
+import express from "express";
+import bodyParser from "body-parser";
 import {Routes} from "../src/routes/chaseApi";
-import * as mongoose from "mongoose";
+import mongoose from "mongoose";
 
 class Server {
   public app: express.Application = express();
   public routePrv: Routes = new Routes();
-  public mongoUrl: string = "mongodb://localhost:27017/Chase";
+  public mongoUrl: string = "mongodb+srv://admin:feelthepain129@cluster0-mimr6.gcp.mongodb.net/chase";
 
   constructor() {
     this.config();
@@ -23,14 +23,16 @@ class Server {
 
   private mongoSetup(): void {
     mongoose
-      .connect(this.mongoUrl, {useNewUrlParser: true})
+      .connect(this.mongoUrl, {useNewUrlParser: true, useUnifiedTopology: true})
       .then(() => {
         console.log("MongoDB connected…");
         mongoose.connection.db.listCollections().toArray(function(err, names) {
-          //console.log(names); // [{ name: 'dbname.myCollection' }]
+          if (err)
+            console.log('err', err);
+          console.log('Collections', names)
         });
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.log("Error", err));
   }
 }
 

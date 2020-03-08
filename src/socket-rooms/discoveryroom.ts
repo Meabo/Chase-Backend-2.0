@@ -18,9 +18,10 @@ class State extends Schema {
 
 export default class Discovery extends Room<State> {
   // When room is initialized
-  onInit(options: any) {
+  onCreate (options: any) {
     this.setState(new State(options.areas));
   }
+
   async onAuth(options: any) {
     return {success: true};
   }

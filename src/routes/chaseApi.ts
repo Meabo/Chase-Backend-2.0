@@ -1,12 +1,13 @@
+import express from "express";
 import {Request, Response, NextFunction} from "express";
 import {AreaController} from "../controllers/areaController";
-import {PersonController} from "../controllers/personController";
+import {UserController} from "../controllers/UserController";
 
 export class Routes {
   public areaController: AreaController = new AreaController();
-  public personController: PersonController = new PersonController();
+  public userController: UserController = new UserController();
 
-  public routes(app): void {
+  public routes(app: express.Application): void {
     app.route("/").get((req: Request, res: Response) => {
       res.status(200).send({
         message: "Welcome to Chase"
@@ -22,11 +23,10 @@ export class Routes {
         next();
       }, this.areaController.getAreas);
 
-    app
-      .route("/areas/:areaId")
-      // get specific contact
-      .get(this.areaController.getAreaWithId);
+    app.route("/areas/:areaId").get(this.areaController.getAreaWithId);
+    
+    app.route("/users").get(this.userController.getUsers);
+    app.route("/users/:userId").get(this.userController.getUserById);
 
-    app.route("/person").get(this.personController.getPersons);
   }
 }

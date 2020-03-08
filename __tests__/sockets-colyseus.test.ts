@@ -1,20 +1,20 @@
 const port: number = 5000;
 const socketUrl: string = `ws://localhost:${port}`;
-import {Client} from "colyseus.js";
+import {Client, Room} from "colyseus.js";
 import Area from "../src/area";
 import {methods, gameServer} from "../servers/socketServer";
 import {assert, expect} from "chai";
 
-describe("Colyseus : Unit it on Events", () => {
-  const areas: Area[] = [];
-  const bounds: number[][] = [
-    [48.8569443, 2.2940138],
-    [48.8586221, 2.2963717],
-    [48.8523546, 2.3012814],
-    [48.8539637, 2.3035665]
-  ];
-  const loc = [48.8556475, 2.2986304];
+const areas: Area[] = [];
+const bounds: number[][] = [
+  [48.8569443, 2.2940138],
+  [48.8586221, 2.2963717],
+  [48.8523546, 2.3012814],
+  [48.8539637, 2.3035665]
+];
+const loc = [48.8556475, 2.2986304];
 
+describe("Colyseus : Unit it on Events", () => {
   before(async () => {
     const area = new Area([48.8556475, 2.2986304], bounds, "AreaA");
     const area1 = new Area([48.8556475, 2.2986304], bounds, "AreaB");
@@ -24,7 +24,6 @@ describe("Colyseus : Unit it on Events", () => {
   });
 
   after(async () => {
-    console.log("shutdown");
     await new Promise((resolve, reject) => {
       gameServer.gracefullyShutdown();
       resolve();
@@ -33,286 +32,189 @@ describe("Colyseus : Unit it on Events", () => {
 
   describe("Basic Connection", () => {
     let client: Client;
+    let room_client: Room;
 
     beforeEach(() => {
       client = new Client(socketUrl);
     });
     afterEach(() => {
-      client.close();
+      room_client.leave();
     });
     it("Should check that the socket is connected", (done) => {
-      client.onOpen.add(() => {
+      client.joinOrCreate("discovery").then(room => {
+        room_client = room;
         done();
-      });
-      client.onError.add((err) => {
-        console.log("something wrong happened:", err.message);
-      });
+      }).catch(err => console.log("something wrong happened:", err.message))
+
     });
   });
+});
 
   describe("Welcome to Discovery", () => {
     let player1: Client;
-
+    let room_player1: Room;
     beforeEach(() => {
       player1 = new Client(socketUrl);
     });
 
     afterEach(() => {
-      player1.close();
+      room_player1.leave();
     });
 
     it("Players should receive Areas in Discovery mode", async () => {
-      const listenerPlayer1 = player1.join("discovery");
-      const joined = new Promise((resolve, reject) => {
-        listenerPlayer1.onJoin.add(() => {
-          resolve();
-        });
-      });
-      await joined;
-      const sendRequestToGetAreas = new Promise((resolve, reject) => {
-        listenerPlayer1.send({action: "getAreas"});
-        resolve(true);
-      });
-      await sendRequestToGetAreas;
-      const getAreas = new Promise((resolve, reject) => {
-        listenerPlayer1.onMessage.add((areas) => {
-          resolve(areas);
-        });
-      });
-      const areas = await getAreas;
+     room_player1 = await player1.joinOrCreate("discovery");
+     room_player1.send({action: "getAreas"});
+     room_player1.onMessage((areas_discovery) => {
+      assert.lengthOf(areas_discovery, 2) 
     });
-  });
-
-  describe("Enter an Area", () => {
-    let player1;
-
-    beforeEach(() => {
-      player1 = new Client(`ws://localhost:${port}`);
-    });
-
-    afterEach(() => {
-      player1.close();
-    });
-
-    it("Players should join a specific area", async () => {
-      const specificArea = "AreaA";
-      const joinSpecificArea = new Promise((resolve, reject) => {
-        const listenerPlayer1 = player1.join(specificArea);
-        listenerPlayer1.onJoin.add(() => {
-          listenerPlayer1.send({action: "getArea"});
-          listenerPlayer1.onMessage.add((area) => {
-            resolve(area);
-          });
-        });
-      });
-      await joinSpecificArea;
     });
   });
 
   describe("Game Engine", () => {
-    let player1;
-    let player2;
-    const timeout = (ms) => new Promise((res) => setTimeout(res, ms));
-    let i = 1;
+    let player1: Client;
+    let player2: Client;
+    let room_player1: Room;
+    let room_player2: Room;
+    const room_name = "SuperGameBegins";
 
-    beforeEach(async () => {
-      methods.createGame({
-        name: "SuperGameBegins" + i,
-        chaseObjectLoc: [1, 1],
-        gameId: i + "",
-        arealoc: loc,
-        bounds
-      });
-      player1 = new Client(`ws://localhost:${port}`);
-      player2 = new Client(`ws://localhost:${port}`);
-      i++;
+    before(() => {
+      methods.createGame({name: room_name})
+    })
+
+    beforeEach(() => {
+      player1 = new Client(socketUrl);
+      player2 = new Client(socketUrl);
     });
 
     afterEach(async () => {
       return await new Promise((resolve, reject) => {
-        player1.close();
-        player2.close();
+        room_player1.leave();
+        room_player2.leave();
         resolve();
       });
     });
 
-    it("Should receive player's update ", async () => {
-      const listenerPlayer = player1.join("SuperGameBegins1", {
+  it("Should receive player's update ", async () => {
+    try {
+      room_player1 = await player1.joinOrCreate(room_name,  {
+        chaseObjectLoc: [1, 1],
+        arealoc: loc,
+        bounds,
+        gameId: "1",
         pseudo: "player1",
         lat: 0,
         lon: 0
       });
-      const listenerPlayer2 = player2.join("SuperGameBegins1", {
+      room_player2 = await player2.join(room_name,  {
         pseudo: "player2",
         lat: 0,
         lon: 0
       });
-      const joined = new Promise((resolve, reject) => {
-        listenerPlayer.onJoin.add(() => {
-          listenerPlayer2.onJoin.add(() => {
-            listenerPlayer.send({action: "move", payload: {lat: 1, lon: 1}});
-            resolve();
-          });
-        });
-      });
-      await joined;
-      const received = new Promise((resolve, reject) => {
-        listenerPlayer2.state.players.onChange = (player, i) => {
-          resolve();
-        };
-      });
-      await received;
-    });
+      const expected_location = {lat: 1, lon: 1}
+      room_player1.send({action: "move", payload: expected_location})
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-    it("Should catch ChaseObject if a player is at the same location of the ChaseObject", async () => {
-      const listenerPlayer = player1.join("SuperGameBegins2", {
-        pseudo: "guardian",
-        lat: 1,
-        lon: 1
-      });
-      const listenerPlayer2 = player2.join("SuperGameBegins2", {
-        pseudo: "chaser",
-        lat: 0,
-        lon: 0
-      });
-      const joined = new Promise((resolve, reject) => {
-        listenerPlayer.onJoin.add(() => {
-          listenerPlayer2.onJoin.add(() => {
-            listenerPlayer.send({action: "catch"});
-            resolve();
-          });
-        });
-      });
-      await joined;
-      const received = new Promise((resolve, reject) => {
-        listenerPlayer2.state.onChange = (changes) => {
-          const {value} = changes.filter(
-            (change) => change.field === "guardian"
-          )[0];
-          if (value.pseudo) resolve(value.pseudo);
-        };
-      });
-      const pseudo = await received;
-      assert.equal(pseudo, "guardian");
-    });
+      const player1_state: any = Object.values(room_player2.state.players)[0];
+      assert.equal(player1_state.lat, expected_location.lat)
+      assert.equal(player1_state.lon, expected_location.lon)
+    }
+    catch (err) {
+      console.log('Error', err)
+    }
+  })
 
-    it("Should steal ChaseObject if a player is at the same location of the guardian", async () => {
-      const listenerPlayer = player1.join("SuperGameBegins2", {
-        pseudo: "guardian",
-        lat: 1,
-        lon: 1
-      });
-      const listenerPlayer2 = player2.join("SuperGameBegins2", {
-        pseudo: "stealer",
-        lat: 1,
-        lon: 1
-      });
-      const joined = new Promise((resolve, reject) => {
-        listenerPlayer2.onJoin.add(() => {
-          listenerPlayer2.send({action: "steal"});
-          resolve();
-        });
-      });
-      await joined;
-      const received = new Promise((resolve, reject) => {
-        listenerPlayer.state.onChange = (changes) => {
-          const {value} = changes.filter(
-            (change) => change.field === "guardian"
-          )[0];
-          if (value.pseudo) resolve(value.pseudo);
-        };
-      });
-      const pseudo = await received;
-      assert.equal(pseudo, "stealer");
+  it("Should catch ChaseObject if a player is at the same location of the ChaseObject",  async() => {
+    /*try {
+      room_player1 = await player1.joinOrCreate(room_name,  {
+      chaseObjectLoc: [1, 1],
+      arealoc: loc,
+      bounds,
+      gameId: "10",
+      pseudo: "guardian",
+      lat: 1,
+      lon: 1
     });
+    room_player2 = await player2.join(room_name,  {
+      pseudo: "player2",
+      lat: 0,
+      lon: 0
+    });
+    
+    room_player1.send({action: "catch"});
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const guardian: string = room_player2.state.guardian.pseudo;
+    assert.equal("guardian", guardian) }
+    catch (err) {
+      console.log('Catch error', err);
+    }*/
   });
-});
-/*
-  describe('Enter a Game Room', () => {
-    let player1;
-    let player2;
-
-    before(async () => {
-      player1 = new Client('ws://localhost:3000');
-      player2 = new Client('ws://localhost:3000');
-    });
-
-    after(async () => {
-      player1.close();
-      player2.close();
-    });
-
-    it('Create a game room', async () => {
-      let dataReceived;
-      const listenerPlayer1 = player1.join(areas[0].name);
-
-      listenerPlayer1.onJoin.add(() => {});
-      listenerPlayer1.onStateChange.add((state) => {});
-      const getAreas = new Promise((resolve, reject) => {
-        listenerPlayer1.listen('area', (change) => {
-          assert.deepEqual(areas[0], change.value);
-          dataReceived = change.value;
-          resolve(dataReceived);
-          //;
-        });
+  
+  
+  it("Should steal ChaseObject if a player is at the same location of the guardian", async () => {
+   /* try {
+      room_player1 = await player1.joinOrCreate(room_name,  {
+        chaseObjectLoc: [1, 1],
+        arealoc: loc,
+        bounds,
+        gameId: "100",
+        pseudo: "guardian",
+        lat: 1,
+        lon: 1
       });
-      await getAreas;
-      listenerPlayer1.send({
-        action: 'joingameroom',
-        name: 'SuperGame',
-        create: true,
+      
+      room_player2 = await player2.join(room_name, {
+          pseudo: "stealer",
+          lat: 1,
+          lon: 1
       });
-      const listenerPlayer2 = player1.join('SuperGame');
-      const PromiseToResolve = new Promise((resolve, reject) => {
-        listenerPlayer2.onJoin.add(() => {
-          console.log('Player1 joined GameRoom');
-          listenerPlayer2.leave();
-          resolve();
-        });
-      });
-
-      await PromiseToResolve;
+      room_player1.send({action: "catch"});
+      room_player2.send({action: "steal"});
+      await new Promise(resolve => setTimeout(resolve, 50));
+      assert.equal(room_player2.state.guardian.pseudo, "stealer");
+    } catch (err) {
+      console.log(err)
+    } */
     });
   });
   describe('Ready feature', () => {
-    let player1;
-    let player2;
+    let player1: Client;
+    let player2: Client;
+    let room_player1: Room;
+    let room_player2: Room;
 
     before(async () => {
       methods.createGameLobby({ name: 'SuperGame' });
-      player1 = new Client('ws://localhost:3000');
-      player2 = new Client('ws://localhost:3000');
+      player1 = new Client(socketUrl);
+      player2 = new Client(socketUrl);
     });
 
     after(async () => {
-      player1.close();
-      player2.close();
+      room_player1.leave();
+      room_player2.leave();
     });
 
     it('Players ready in GameRoom', async () => {
-      const listenerPlayer = player1.join('SuperGame');
-      const listenerPlayer2 = player2.join('SuperGame');
+      room_player1 = await player1.joinOrCreate('SuperGame');
+      room_player2 = await player2.join('SuperGame');
 
-      listenerPlayer.onJoin.add(() => {
-        listenerPlayer.send({ action: 'ready', pseudo: 'player1' });
-      });
-
-      const getReadyPlayer1 = new Promise((resolve, reject) => {
-        listenerPlayer.onMessage.add((message) => {
-          if (message.action === 'everyone_ready') resolve();
+     
+      const player1_ready = new Promise((resolve, reject) => {
+        room_player1.onMessage((message) => {
+          if (message.action === 'everyone_ready') 
+          resolve(true);
         });
       });
-
-      listenerPlayer2.onJoin.add(() => {
-        listenerPlayer2.send({ action: 'ready', pseudo: 'player2' });
-      });
-      const getReadyPlayer2 = new Promise((resolve, reject) => {
-        listenerPlayer2.onMessage.add((message) => {
-          if (message.action === 'everyone_ready') resolve();
+      const player2_ready = new Promise((resolve, reject) => {
+        room_player2.onMessage((message) => {
+          if (message.action === 'everyone_ready') 
+          resolve(true);
         });
       });
-
-      await getReadyPlayer1;
-      await getReadyPlayer2;
+      Promise.all([player1_ready, player2_ready]).then((values) => {
+          assert.deepEqual(values, [true, true]);
+      })
+      
+      room_player1.send({ action: 'ready', pseudo: 'player1' });
+      room_player2.send({ action: 'ready', pseudo: 'player2' });
     });
-  });*/
+  });

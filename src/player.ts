@@ -9,8 +9,13 @@ export default class Player extends Schema {
 
   @type("number")
   lon: number;
+  
+  @type("number")
+  score: number = 0;
 
-  @type("string")
+  @type("number")
+  distance: number = 0;
+
   playerId: string = "";
 
   constructor(pseudo_: string, lat: number, lon: number) {

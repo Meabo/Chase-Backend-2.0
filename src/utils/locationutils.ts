@@ -1,7 +1,7 @@
 import orient from "./orientation";
-const kmInMeters = 1000;
+import earcut from "earcut"
 
-export function distance(lat1, lon1, lat2, lon2) {
+export function distance(lat1: number, lon1: number, lat2: number, lon2: number) {
   if (lat1 === lat2 && lon1 === lon2) {
     return 0;
   }
@@ -15,7 +15,7 @@ export function distance(lat1, lon1, lat2, lon2) {
   return 12742 * Math.asin(Math.sqrt(a)) * 1000; // 2 * R; R = 6371 km
 }
 
-export function distanceByLoc(locA, locB) {
+export function distanceByLoc(locA: number[], locB: number[]) {
   if (locA[0] === locB[0] && locA[1] === locB[1]) {
     return 0;
   }
@@ -143,7 +143,7 @@ export function robustPointInPolygon(vs: number[][], point: number[]) {
   return 2 * inside - 1;
 }
 
-export function getRandomLocationInsidePolygon(polygon: number[][]) {
+/*export function getRandomLocationInsidePolygon(polygon: number[][]) {
   const r = Math.random();
   const t = Math.random();
   const ABX = polygon[1][1] - polygon[0][1];
@@ -153,4 +153,84 @@ export function getRandomLocationInsidePolygon(polygon: number[][]) {
   const newlocx = ABX * r + ADX * t + polygon[0][1];
   const newlocy = ABY * r + ADY * t + polygon[0][0];
   return {latitude: newlocy, longitude: newlocx};
+}*/
+function getTriangleArea(triangle: number[][]) {
+  const [a, b, c] = triangle;
+  
+  return 0.5 * (
+    (b[0] - a[0]) * (c[1] - a[1]) -
+    (c[0] - a[0]) * (b[1] - a[1])
+  );
+}
+
+export function triangulate(polygon: number[][]) {
+  // [[x0, y0], [x1, y1], ...] ==> [x0,y0, x1,y1, ....]
+  const flatPoints = polygon.reduce((f, p) => [...f, ...p], []);
+  // indices to coordinate "pairs" in the "flatPoints" array
+  const indices = earcut(flatPoints);
+  
+  const triangles = [];
+  
+  // three indices describe a triangle
+  for (let i = 0; i < indices.length; i += 3) {
+    const triangleIndices = [indices[i], indices[i + 1], indices[i + 2]];
+    const points = triangleIndices.map(index => {
+      const x = flatPoints[index * 2];
+      const y = flatPoints[index * 2 + 1];
+      
+      return [x, y];
+    });
+	
+    // A triangle is a set of 3 points: [a, b, c] where each point has the form [x, y]
+    triangles.push(points);
+  }
+  return triangles;
+}
+
+
+function generateDistribution(triangles) {
+  const totalArea = triangles.reduce((sum, triangle) => {
+    return sum + getTriangleArea(triangle), 0
+  });
+  const cumulativeDistribution = [];
+  
+  for (let i = 0; i < triangles.length; i++) {
+    const lastValue = cumulativeDistribution[i - 1] || 0;
+    const nextValue = lastValue + getTriangleArea(triangles[i]) / totalArea;
+    cumulativeDistribution.push(nextValue);
+  }
+  // [area1, area1 + aera2, area1 + area2 + area3, ...]
+  return cumulativeDistribution;
+}
+
+function selectRandomTriangle(triangles) {
+  const cumulativeDistribution = generateDistribution(triangles);
+  const rnd = Math.random();
+  const index = cumulativeDistribution.findIndex(v => v > rnd);
+
+  return triangles[index];
+}
+
+export function calcRandomPointInTriangle(triangles) {
+  const triangle = selectRandomTriangle(triangles);
+  let wb = Math.random();
+  let wc = Math.random();
+
+  // point will be outside of the triangle, invert weights
+  if (wb + wc > 1) {
+    wb = 1 - wb;
+    wc = 1 - wc;
+  }
+
+  const [a, b, c] = triangle.map(coords => ({x: coords[0], y: coords[1]}));
+
+  const rb_x = wb * (b.x - a.x);
+  const rb_y = wb * (b.y - a.y);
+  const rc_x = wc * (c.x - a.x);
+  const rc_y = wc * (c.y - a.y);
+
+  const r_x = rb_x + rc_x + a.x;
+  const r_y = rb_y + rc_y + a.y;
+
+  return {latitude: r_x, longitude: r_y}
 }

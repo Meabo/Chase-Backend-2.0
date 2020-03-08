@@ -1,25 +1,24 @@
-import * as mongoose from "mongoose";
-const {Schema} = mongoose;
+import mongoose, { Schema, Document } from 'mongoose';
 import {distanceByLoc} from "../utils/locationutils";
 
-const AreaSchema = new Schema(
+const collection = "areas";
+
+export interface IArea extends Document {
+  name: string;
+  location: Array<any>;
+  bounds: Array<any>;
+}
+
+const AreaSchema: Schema = new Schema(
   {
-    name: {
-      type: String,
-      required: "Enter a first name"
-    },
-    location: {
-      type: Array,
-      required: "Enter a location."
-    },
-    bounds: {
-      type: Array
-    }
+    name: { type: String, required: true },
+    location: { type: Array, required: true },
+    bounds: { type: Array }
   },
-  {collection: "Areas"}
+  {collection: collection}
 );
 
-const Areas = mongoose.model("Areas", AreaSchema);
+const Areas = mongoose.model<IArea>(collection, AreaSchema);
 
 export const findAllAreas = async (lat: number, lng: number, limit: number) => {
   try {
@@ -34,7 +33,7 @@ export const findAllAreas = async (lat: number, lng: number, limit: number) => {
   }
 };
 
-export const findAreaById = async (id) => {
+export const findAreaById = async (id: any) => {
   try {
     return await Areas.findById(id).exec();
   } catch (error) {

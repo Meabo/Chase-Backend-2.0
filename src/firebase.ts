@@ -29,7 +29,7 @@ const AuthGateway = {
   },
   SignOut: async () => {
     try {
-      const result = await firebase.auth().signOut();
+      await firebase.auth().signOut();
       return true;
     } catch (err) {
       return false;

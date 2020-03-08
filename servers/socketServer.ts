@@ -1,4 +1,4 @@
-import * as app from "express";
+import app from "express";
 import {createServer} from "http";
 import {Server} from "colyseus";
 import AreaRoom from "../src/socket-rooms/arearoom";
@@ -21,42 +21,25 @@ export const gameServer = new Server({
 
 export const methods = {
   getGameServer: () => gameServer,
-  init: async (areas) => {
-    await methods.createDiscoveryRoom(areas);
-    await methods.createAreasRoom(areas);
+  init: (areas) => {
+     methods.createDiscoveryRoom(areas);
   },
-  createDiscoveryRoom: async (areas) => {
+  createDiscoveryRoom: (areas) => {
     try {
-      await gameServer.register("discovery", Discovery, {
-        areas
-      });
+      gameServer.define("discovery", Discovery, {areas});
     } catch (err) {
       console.log("Error creating Discovery room", err);
     }
   },
-  createAreasRoom: async (areas) => {
-    if (areas) {
-      areas.map(async (area) => {
-        try {
-          await gameServer.register(area.getName(), AreaRoom, {
-            area,
-            methods: this.methods
-          });
-        } catch (err) {
-          console.log("Error creating Discovery room", err);
-        }
-      });
-    }
-  },
   createGameLobby: (data) => {
-    gameServer.register(data.name, GameLobby, data);
+    gameServer.define(data.name, GameLobby, data);
   },
   createGame: (data) => {
-    gameServer.register(data.name, GameInstance, data);
+    gameServer.define(data.name, GameInstance, data);
   },
-  createSoloGame: async (name, options) => {
+  createSoloGame: (name, options) => {
     try {
-      await gameServer.register(name, GameInstanceSolo, options);
+      gameServer.define(name, GameInstanceSolo, options);
       console.log("Solo game created");
     } catch (err) {
       console.log("Error creating Solo Game room", err);

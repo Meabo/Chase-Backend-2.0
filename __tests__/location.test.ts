@@ -1,7 +1,7 @@
 import {assert, expect} from "chai";
 import Player from "../src/player";
 import Area from "../src/area";
-import {distance, robustPointInPolygon} from "../src/utils/locationutils";
+import {distance, robustPointInPolygon, triangulate, calcRandomPointInTriangle} from "../src/utils/locationutils";
 
 describe("Location engine", () => {
   let player: Player;
@@ -12,12 +12,19 @@ describe("Location engine", () => {
 
   before(() => {
     player = new Player("Mehdi", 48.8556475, 2.2986304);
+
+    const top_l = [48.858622, 2.296372]
+    const top_r = [48.858662, 2.296466]
+    const ver_top_r = [48.857426, 2.298411]
+    
+
+
     const top_left = [48.8569443, 2.2940138];
     const top_right = [48.8586221, 2.2963717];
-    const bot_left = [48.8523546, 2.3012814];
     const bot_right = [48.8539637, 2.3035665];
+    const bot_left = [48.8523546, 2.3012814];
 
-    bounds = [top_left, top_right, bot_left, bot_right];
+    bounds = [top_left, top_right, bot_right, bot_left];
     area = new Area(loc, bounds, "test");
   });
 
@@ -74,5 +81,10 @@ describe("Location engine", () => {
 
   it("should give the distance 0 between 2 entities which are at the same pos", async () => {
     assert.equal(distance(0, 0, 0, 0), 0);
+  });
+
+  it("Triangulation test", async () => {
+    const result = calcRandomPointInTriangle(area.getTriangles());
+    assert.equal(robustPointInPolygon(area.getBounds(), [result.latitude, result.longitude]), -1);  
   });
 });

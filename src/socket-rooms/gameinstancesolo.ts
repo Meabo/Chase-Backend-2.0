@@ -1,14 +1,15 @@
-import {Room, Client, Clock} from "colyseus";
+import {Room, Client} from "colyseus";
 import GameSolo from "../gameSolo";
-import {gameServer} from "../../servers/socketServer";
+import { transcode } from "buffer";
 
 export default class GameInstanceSolo extends Room<GameSolo> {
   // When room is initialized$
   gameSolo: GameSolo;
   options: any;
   maxClient = 1;
+  gameStarted = false;
 
-  onInit(options: any) {
+  onCreate(options: any) {
     this.options = options;
     if (!this.gameSolo) this.gameSolo = new GameSolo(this.options);
     this.setState(this.gameSolo);
@@ -36,9 +37,11 @@ export default class GameInstanceSolo extends Room<GameSolo> {
 
   beginGame(time: number) {
     console.log("GameBegins");
+    this.gameStarted = true;
+    this.broadcast({message: "startGame"});
     this.broadcast({
       message: "chaseObject",
-      value: {chaseObject: this.gameSolo.getChaseObjectLocation(), time: time}
+      value: {chaseObject: this.gameSolo.getChaseObjectLocation(), time: time, bounds: this.gameSolo.getCurrentBounds(), triangles: this.gameSolo.getAreaTriangles()}
     });
     console.log("ChaseObject Broadcasted", time);
     this.clock.setTimeout(() => this.finishedGame(), time * 1000);
@@ -48,24 +51,23 @@ export default class GameInstanceSolo extends Room<GameSolo> {
     console.log("GameFinished");
     const results = this.state.getResult();
     this.broadcast({message: "results", value: results});
-    this.broadcast({message: "gameFinished"});
+   // this.broadcast({message: "gameFinished"});
     this.disconnect();
   }
   // When a client sends a message
-  async onMessage(client: Client, data: any) {
+  onMessage(client: Client, data: any) {
     const {action, payload} = data;
     console.log("received action", action);
     switch (action) {
       case "start":
         console.log(payload);
-        const {time} = payload;
-        this.beginGame(time);
+        this.beginGame(payload);
         break;
       case "move":
-        this.state.movePlayer(client.sessionId, payload);
+        this.gameStarted && this.state.movePlayer(client.sessionId, payload);
         break;
       case "catch":
-        await this.state.catchChaseObject(client.sessionId);
+        this.state.catchChaseObject(client.sessionId);
         break;
     }
   }

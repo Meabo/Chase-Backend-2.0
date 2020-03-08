@@ -2,6 +2,7 @@ import AreaRepository from "./adapters/AreaRepository";
 import {distanceByLoc} from "./utils/locationutils";
 import User from "./user";
 import Area from "./area";
+
 export default class Discover {
   private areaRepository: AreaRepository;
 
@@ -11,6 +12,10 @@ export default class Discover {
 
   initAreas(areas: Area[]) {
     this.areaRepository.set(areas);
+  }
+
+  getAreas() {
+    return this.areaRepository.getAll();
   }
 
   showGames(user: User, limit: number) {

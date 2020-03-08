@@ -1,11 +1,12 @@
-import {Schema, type} from "@colyseus/schema";
+import { Schema, type } from "@colyseus/schema";
 
 export default class ChaseObject extends Schema {
-  @type("number")
+  @type("float32")
   lat: number;
 
-  @type("number")
+  @type("float32")
   lon: number;
+
   constructor(lat: number, lon: number) {
     super();
     this.lat = lat;

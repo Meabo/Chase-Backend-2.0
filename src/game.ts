@@ -7,9 +7,8 @@ import Area from "./area";
 import {
   distanceByLoc,
   robustPointInPolygon,
-  getRandomLocationInsidePolygon
+  calcRandomPointInTriangle
 } from "./utils/locationutils";
-const {take, finalize} = require("rxjs/operators");
 
 export default class Game extends Schema {
   @type(History)
@@ -44,7 +43,7 @@ export default class Game extends Schema {
     this.players[id] = new Player(pseudo, lat, lon);
   }
 
-  async catchChaseObject(id: string) {
+  catchChaseObject(id: string) {
     let result = false;
     const {pseudo, lat, lon} = this.players[id];
     if (this.alreadyGuardian === false) {
@@ -54,7 +53,6 @@ export default class Game extends Schema {
       );
       if (distance < 10) {
         // in meters
-        console.log("Catch happened");
         this.guardian = new Player(pseudo, lat, lon);
         this.alreadyGuardian = true;
         result = true;
@@ -97,9 +95,7 @@ export default class Game extends Schema {
   }
 
   generateAnotherPositionForChaseObject() {
-    const {latitude, longitude} = getRandomLocationInsidePolygon(
-      this.area.getBounds()
-    );
+    const {latitude, longitude} = calcRandomPointInTriangle(this.area.getTriangles());
     this.chaseObject = new ChaseObject(latitude, longitude);
     this.guardian = null;
     this.alreadyGuardian = false;

@@ -8,7 +8,7 @@ describe("Discover", () => {
   const areas = [];
   let area;
   const userLoc = [48.850198, 2.2973423];
-  const loc = [48.8556475, 2.2986304];
+  const loc = [48.850198, 2.2973423];
 
   before(async () => {
     const top_left = [48.8569443, 2.2940138];

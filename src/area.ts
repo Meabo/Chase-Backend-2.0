@@ -1,6 +1,6 @@
 import {Schema, type, ArraySchema} from "@colyseus/schema";
 import {Location} from "../src/location";
-import {robustPointInPolygon} from "./utils/locationutils";
+import {robustPointInPolygon, triangulate} from "./utils/locationutils";
 
 export default class Area extends Schema {
   @type(Location)
@@ -34,11 +34,10 @@ export default class Area extends Schema {
   }
 
   getBounds() {
-    return [
-      this.bounds[0].getLocation(),
-      this.bounds[1].getLocation(),
-      this.bounds[2].getLocation(),
-      this.bounds[3].getLocation()
-    ];
+    return this.bounds.map(bound => bound.getLocation());
+  }
+
+  getTriangles() {
+      return triangulate(this.getBounds());
   }
 }

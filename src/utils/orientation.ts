@@ -1,5 +1,3 @@
-"use strict";
-
 import twoProduct from "two-product";
 import robustSum from "robust-sum";
 import robustScale from "robust-scale";
@@ -42,7 +40,7 @@ function sign(n: number) {
   return "";
 }
 
-function generateSum(expr) {
+function generateSum(expr: number[]): any {
   if (expr.length === 1) {
     return expr[0];
   } else if (expr.length === 2) {
@@ -59,7 +57,7 @@ function generateSum(expr) {
   }
 }
 
-function determinant(m: number[][]) {
+function determinant(m: number[][]): any {
   if (m.length === 2) {
     return [
       [
@@ -93,8 +91,8 @@ function determinant(m: number[][]) {
 }
 
 function orientation(n: number) {
-  const pos = [];
-  const neg = [];
+  const pos: number[] = [];
+  const neg: number[] = [];
   const m = matrix(n);
   const args = [];
   for (let i = 0; i < n; ++i) {

@@ -3,7 +3,7 @@ import Game from "../game";
 
 export default class GameInstance extends Room<Game> {
   // When room is initialized
-  onInit(options: any) {
+  onCreate(options: any) {
     this.setState(new Game(options));
   }
   // Checks if a new client is allowed to join. (default: `return true`)
@@ -37,7 +37,7 @@ export default class GameInstance extends Room<Game> {
         this.state.movePlayer(client.sessionId, payload);
         break;
       case "catch":
-        await this.state.catchChaseObject(client.sessionId);
+        this.state.catchChaseObject(client.sessionId);
         break;
       case "steal":
         this.state.stealChaseObject(client.sessionId);

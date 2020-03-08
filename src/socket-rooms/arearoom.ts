@@ -19,7 +19,7 @@ class State extends Schema {
 
 export default class AreaRoom extends Room<State> {
   // When room is initialized
-  onInit(options: any) {
+  onCreate(options: any) {
     //let socketServerInstance = new SocketServer().getInstance();
     //console.log(this);
     this.setState(new State(options.area));
