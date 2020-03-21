@@ -1,15 +1,18 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "es6",
-    "noImplicitAny": false,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist",
-    "baseUrl": ".",
-    "typeRoots" : ["./typings", "mocha"],
-    "experimentalDecorators": true
+      "module": "commonjs",
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true,
+      "target": "es6",
+      "noImplicitAny": false,
+      "moduleResolution": "node",
+      "sourceMap": true,
+      "outDir": "dist",
+      "baseUrl": ".",
+      "typeRoots" : ["src/types/*.d.ts", "mocha"],
+      "experimentalDecorators": true
   },
-  "include": ["src/**/*.ts", "servers/socketServer.ts"]
+  "include": [
+      "src/**/*.ts", "servers/socketServer.ts"
+  ]
 }
