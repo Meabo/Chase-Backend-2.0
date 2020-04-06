@@ -49,11 +49,11 @@ class Server {
         useUnifiedTopology: true
       })
       .then(() => {
-        console.log("MongoDB connected…");
-        mongoose.connection.db.listCollections().toArray((err, names) => {
+       console.log("MongoDB connected…");
+         /*mongoose.connection.db.listCollections().toArray((err, names) => {
           if (err) console.log("err", err);
           console.log("Collections", names);
-        });
+        });*/
       })
       .catch(err => console.log("Error", err));
   }
