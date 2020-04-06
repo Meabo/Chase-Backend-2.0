@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import {findAllusers, findUserById} from "../models/user";
-import {Request, Response} from "express";
+import {findAllusers, findUserById, findUserBy} from "../models/user";
+import { Request, Response } from "express";
+import axios from "axios"
 
 export class UserController {
 
@@ -13,9 +14,29 @@ export class UserController {
       .catch((error) => res.status(501).send(error));
   }
 
-  public async getUserById(req: Request, res: Response) {
-    findUserById(req.params.id)
-      .then((user) => res.status(200).send(user))
-      .catch((error) => res.status(501).send(error));
+  public async findUserById(id: string) {
+    findUserById(id)
+      .then((user) => user)
+      .catch((error) => error);
+  }
+
+  public async findUser(parameter: string, value: any) {
+    findUserBy(parameter, value)
+      .then((user) => user)
+      .catch((error) => error);
+  }
+
+  public async createUserFacebook(id: string, facebookAccessToken: string) {
+    const fields = "id,first_name,last_name,email,age_range,gender,birthday,name_format"
+    const graphUrl = `https://graph.facebook.com/v6.0/me?fields=${fields}&access_token=${facebookAccessToken}`
+    
+    const response = await axios.get(graphUrl);
+    return response.data;
+     /* .then((response) => console.log('Facebook Graph Response', response.data))
+      .catch((error) => console.log('Error', error))
+    // TODO
+    /* findUserBy(parameter, value)
+      .then((user) => user)
+      .catch((error) => error); */
   }
 }

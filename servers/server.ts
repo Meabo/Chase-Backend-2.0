@@ -2,7 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import { Routes } from "../src/routes/routes";
 import mongoose from "mongoose";
-import passport from "passport"
+import { passportMethods } from "../src/authentication/passportStrategies"
 import path from "path"
 import morgan from "morgan"
 import cookieParser from "cookie-parser"
@@ -26,11 +26,10 @@ class Server {
   }
 
   private configApplicationMiddleWare(): void {
-    this.app.use(morgan("combined"));
+    this.app.use(morgan("dev"));
     this.app.use(cookieParser())
     this.app.use(bodyParser.urlencoded({ extended: true }));
     this.app.use(expressSession({ secret: 'keyboard cat', resave: true, saveUninitialized: true }));
-
   }
 
   private configViews(): void {
@@ -39,8 +38,8 @@ class Server {
   }
 
   private configPassport(): void {
-    this.app.use(passport.initialize());
-    this.app.use(passport.session());
+    this.app.use(passportMethods.init());
+    this.app.use(passportMethods.initSession());
   }
 
   private mongoSetup(): void {

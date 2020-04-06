@@ -9,6 +9,7 @@ export interface IUser extends Document {
 
 const usersSchema: Schema = new Schema(
   { 
+    id: {type: String, required: true},
     name: { type: String, required: true },
     age: { type: Number },
   },
@@ -28,7 +29,20 @@ export const findAllusers = async () => {
 
 export const findUserById = async (id: any) => {
   try {
-    const user = await Users.findOne().exec();
+    const user = await Users.findOne(id).exec();
+    return user;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const findUserBy = async (parameter: any, value: any) => {
+  try {
+    const user = await Users.findOne({
+      where: {
+        [parameter]: value
+      }
+    }).exec();
     return user;
   } catch (error) {
     throw error;
