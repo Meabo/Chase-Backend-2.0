@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import {findAllusers, findUserById, findUserBy} from "../models/user";
+import {findAllusers, findUserById, findUserBy, findOrCreate} from "../models/user";
 import { Request, Response } from "express";
 import axios from "axios"
 
@@ -31,7 +31,8 @@ export class UserController {
     const graphUrl = `https://graph.facebook.com/v6.0/me?fields=${fields}&access_token=${facebookAccessToken}`
     
     const response = await axios.get(graphUrl);
-    return response.data;
+    return await findOrCreate(response.data)
+    //return response.data;
      /* .then((response) => console.log('Facebook Graph Response', response.data))
       .catch((error) => console.log('Error', error))
     // TODO
