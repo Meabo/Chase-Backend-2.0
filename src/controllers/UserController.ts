@@ -4,7 +4,6 @@ import { Request, Response } from "express";
 import axios from "axios"
 
 export class UserController {
-
   public getUsers(req: Request, res: Response) {
     findAllusers()
       .then((users) => {
@@ -32,12 +31,5 @@ export class UserController {
     
     const response = await axios.get(graphUrl);
     return await findOrCreate(response.data)
-    //return response.data;
-     /* .then((response) => console.log('Facebook Graph Response', response.data))
-      .catch((error) => console.log('Error', error))
-    // TODO
-    /* findUserBy(parameter, value)
-      .then((user) => user)
-      .catch((error) => error); */
   }
 }

@@ -2,21 +2,31 @@ import mongoose, { Schema, Document } from 'mongoose';
 import { AutoIncrement } from "./autoIncrementCounter"
 import { _calculateAge } from "../utils/calculators"
 
-const collection = "users";
+const collection = "Users";
 
 export interface IUser extends Document {
-  name: string;
+  _id: Schema.Types.ObjectId;
+  pseudo: string;
   age: number;
+  gender: string;
+  firstName: string;
+  lastName: string;
+  createdAt: Date;
+  updatedAt: Date;
+  facebookProfileId: Object;
+  googleProfileId: Object;
 }
 
 const usersSchema: Schema = new Schema(
   { 
-    id: {type: Number, unique: true, min: 1 },
-    pseudo: { type: String, required: true },
+    _id: { type: Schema.Types.ObjectId, auto: true },
+    pseudo: { type: String },
     age: { type: Number },
     gender: {type: String},
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now },
+    firstName: {type: String},
+    lastName: {type: String},
+    createdAt: { type: Date, default: Date.now, required: true},
+    updatedAt: { type: Date, default: Date.now, required: true },
     facebookProfileId: {type: Object},
     googleProfileId: {type: Object}
   },
@@ -25,11 +35,11 @@ const usersSchema: Schema = new Schema(
 
 const Users = mongoose.model<IUser>(collection, usersSchema);
 
-usersSchema.pre('save', (next: mongoose.HookNextFunction) => {
+/*usersSchema.pre('save', (next: mongoose.HookNextFunction) => {
   const doc: any = this;
   if (doc.isNew) {
     const nextSeq = AutoIncrement.findOneAndUpdate(
-        { name: 'Test' }, 
+        { _id: 'Users' }, 
         { $inc: { seq: 1 } }, 
         { new: true, upsert: true }
     );
@@ -39,7 +49,7 @@ usersSchema.pre('save', (next: mongoose.HookNextFunction) => {
     next(doc);
 }
 else next();
-})
+})*/
 
 export const findAllusers = async () => {
   try {
@@ -74,10 +84,12 @@ export const findUserBy = async (parameter: any, value: any) => {
 
 export const findOrCreate = async (profile: any) => {
   const modelDocument = {
-    pseudo: profile.first_name,
-    age: _calculateAge(profile.birthday),
-    gender: profile.gender,
-    facebookProfileId: profile.id
+    facebookProfileId: profile.id,
+    firstName: profile.first_name,
+    lastName: profile.last_name,
+    age: _calculateAge(profile.birthday ?? null),
+    gender: profile.gender ?? "unknown",
+    updatedAt: Date.now(),
   }
   try {
     const user = await Users.findOneAndUpdate(
