@@ -11,7 +11,7 @@ import expressSession from "express-session"
 class Server {
   public app: express.Application = express();
   public routePrv: Routes = new Routes();
-  public mongoUrl: string = "mongodb+srv://admin:feelthepain129@cluster0-mimr6.gcp.mongodb.net/chase";
+  public mongoUrl: string = `mongodb+srv://${process.env.MONGODB_CLIENT}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_URL}/${process.env.MONGODB_DATABASE}`;
 
   constructor() {
     this.config();
@@ -46,14 +46,11 @@ class Server {
     mongoose
       .connect(this.mongoUrl, {
         useNewUrlParser: true,
-        useUnifiedTopology: true
+        useUnifiedTopology: true,
+        useFindAndModify: false,
       })
       .then(() => {
        console.log("MongoDB connected…");
-         /*mongoose.connection.db.listCollections().toArray((err, names) => {
-          if (err) console.log("err", err);
-          console.log("Collections", names);
-        });*/
       })
       .catch(err => console.log("Error", err));
   }

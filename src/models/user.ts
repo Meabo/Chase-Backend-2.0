@@ -89,8 +89,9 @@ export const findOrCreate = async (profile: any) => {
     lastName: profile.last_name,
     age: _calculateAge(profile.birthday ?? null),
     gender: profile.gender ?? "unknown",
-    updatedAt: Date.now(),
+    updatedAt: Date.now()
   }
+  
   try {
     const user = await Users.findOneAndUpdate(
       { facebookProfileId: profile.id },
