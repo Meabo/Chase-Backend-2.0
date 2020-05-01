@@ -188,22 +188,22 @@ export function triangulate(polygon: number[][]) {
 }
 
 
-function generateDistribution(triangles) {
-  const totalArea = triangles.reduce((sum, triangle) => {
+function generateDistribution(triangles: any) {
+  const totalArea = triangles.reduce((sum: any, triangle: any) => {
     return sum + getTriangleArea(triangle), 0
   });
   const cumulativeDistribution = [];
   
   for (let i = 0; i < triangles.length; i++) {
-    const lastValue = cumulativeDistribution[i - 1] || 0;
-    const nextValue = lastValue + getTriangleArea(triangles[i]) / totalArea;
+    const lastValue: any = cumulativeDistribution[i - 1] || 0;
+    const nextValue: any = lastValue + getTriangleArea(triangles[i]) / totalArea;
     cumulativeDistribution.push(nextValue);
   }
   // [area1, area1 + aera2, area1 + area2 + area3, ...]
   return cumulativeDistribution;
 }
 
-function selectRandomTriangle(triangles) {
+function selectRandomTriangle(triangles: any) {
   const cumulativeDistribution = generateDistribution(triangles);
   const rnd = Math.random();
   const index = cumulativeDistribution.findIndex(v => v > rnd);
@@ -211,7 +211,7 @@ function selectRandomTriangle(triangles) {
   return triangles[index];
 }
 
-export function calcRandomPointInTriangle(triangles) {
+export function calcRandomPointInTriangle(triangles: any) {
   const triangle = selectRandomTriangle(triangles);
   let wb = Math.random();
   let wc = Math.random();
@@ -222,7 +222,7 @@ export function calcRandomPointInTriangle(triangles) {
     wc = 1 - wc;
   }
 
-  const [a, b, c] = triangle.map(coords => ({x: coords[0], y: coords[1]}));
+  const [a, b, c] = triangle.map((coords: any) => ({x: coords[0], y: coords[1]}));
 
   const rb_x = wb * (b.x - a.x);
   const rb_y = wb * (b.y - a.y);
