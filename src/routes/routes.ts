@@ -5,6 +5,7 @@ import { Request, Response, NextFunction } from "express";
 import { AreaController } from "../controllers/areaController";
 import { UserController } from "../controllers/UserController";
 import { passportMethods } from "../authentication/passportStrategies"
+import { verifyFacebookToken, verifyAccessToken } from "../authentication/token";
 
 export class Routes {
   public areaController: AreaController = new AreaController();
@@ -22,6 +23,7 @@ export class Routes {
     this.generateWebAuthenticationRoutes(app);
     this.generateGameRoutes(app);
     this.generateAndroidAuthenticationRoutes(app);
+    this.generateOnboardingRoutes(app);
   }
 
   private initConfig() {
@@ -53,6 +55,15 @@ export class Routes {
         }
       })(req, res, next)
     });
+  }
+
+  private generateOnboardingRoutes(app: express.Application) {
+    app
+    .route("/onboarding/player/create")
+    .post((req: Request, res, next) => {
+      console.log('Onboarding Request', req.query)
+      next();
+    }, this.userController.createPlayer)
   }
 
   private generateGameRoutes(app: express.Application) {

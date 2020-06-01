@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Mongoose, Query } from 'mongoose';
 import { AutoIncrement } from "./autoIncrementCounter"
 import { _calculateAge } from "../utils/calculators"
 
@@ -15,6 +15,7 @@ export interface IUser extends Document {
   updatedAt: Date;
   facebookProfileId: Object;
   googleProfileId: Object;
+  avatarUrl: string;
 }
 
 const usersSchema: Schema = new Schema(
@@ -28,7 +29,8 @@ const usersSchema: Schema = new Schema(
     createdAt: { type: Date, default: Date.now, required: true},
     updatedAt: { type: Date, default: Date.now, required: true },
     facebookProfileId: {type: Object},
-    googleProfileId: {type: Object}
+    googleProfileId: {type: Object},
+    avatarUrl: {type: String}
   },
   {collection: collection}
 );
@@ -82,7 +84,7 @@ export const findUserBy = async (parameter: any, value: any) => {
   }
 }
 
-export const findOrCreate = async (profile: any) => {
+export const findOrCreateByFacebookProfile = async (profile: any) => {
   const modelDocument = {
     facebookProfileId: profile.id,
     firstName: profile.first_name,
@@ -102,5 +104,17 @@ export const findOrCreate = async (profile: any) => {
     return user;
   } catch (error) {
     throw error;
+  }
+}
+
+export const createPlayerInDb = async (id: string, pseudo: string, avatarUrl: string) => {
+  try {
+    await Users.updateOne(
+      { "_id": id}, // Filter
+      {$set: {"pseudo": pseudo, "avatarUrl": avatarUrl}}, 
+      {upsert: false});
+  } catch (error) {
+    console.log("error", error);
+    throw error; 
   }
 }

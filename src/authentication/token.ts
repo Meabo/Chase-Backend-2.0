@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { configJwt } from "./config";
 import axios from "axios";
+import { JwtToken } from "../interfaces/customInterfaces"
 
 export const generateAccessToken = (userId) => {
   const expiresIn = "30 days";
@@ -17,6 +18,16 @@ export const generateAccessToken = (userId) => {
 
   return token;
 };
+
+export const verifyAccessToken = async (encodedToken: string) => {
+ const promisedDecodedToken: Promise<JwtToken> =  new Promise((resolve, reject) => {
+        jwt.verify(encodedToken, configJwt.jwtSecret, (err, decoded: JwtToken) => {
+          if (err) reject(err);
+          resolve(decoded);
+        })
+  })
+  return await promisedDecodedToken;
+}
 
 export const verifyFacebookToken = async (facebookAccessToken: string) => {
   const graphUrl = `https://graph.facebook.com/v6.0/debug_token?input_token=${facebookAccessToken} 
