@@ -73,19 +73,20 @@ const androidFacebookStrategy = new CustomStrategy(async (req, done) => {
       const userController = new UserController();
       userController
         .findUser("profile_facebook_id", data.user_id)
-        .then((user: any) => {
+        .then(async (user: any) => {
           let user_ = user;
           if (!user) {
-            user_ = userController.createUserFacebook(
+            user_ = await userController.createUserFacebook(
               data.user_id,
               facebookAccessToken
             );
           }
-          user_.id = data.user_id;
-          const token = generateAccessToken(user_.id);
+          console.log('User is', user_);
+          const token = generateAccessToken(user_._id);
           console.log("Json Web token sent", token);
           done(null, token);
-        });
+        })
+        .catch((err) => done(err, null));
     } else {
       done(response.error.message, null);
     }
