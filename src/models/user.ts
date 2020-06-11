@@ -7,6 +7,7 @@ const collection = "Users";
 export interface IUser extends Document {
   _id: Schema.Types.ObjectId;
   pseudo: string;
+  email: string;
   age: number;
   gender: string;
   firstName: string;
@@ -22,6 +23,7 @@ const usersSchema: Schema = new Schema(
   { 
     _id: { type: Schema.Types.ObjectId, auto: true },
     pseudo: { type: String },
+    email: { type: String },
     age: { type: Number },
     gender: {type: String},
     firstName: {type: String},
@@ -89,6 +91,7 @@ export const findOrCreateByFacebookProfile = async (profile: any) => {
     facebookProfileId: profile.id,
     firstName: profile.first_name,
     lastName: profile.last_name,
+    email: profile.email,
     age: _calculateAge(profile.birthday ?? null),
     gender: profile.gender ?? "unknown",
     updatedAt: Date.now()

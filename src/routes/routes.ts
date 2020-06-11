@@ -4,12 +4,14 @@ import passport from "passport"
 import { Request, Response, NextFunction } from "express";
 import { AreaController } from "../controllers/areaController";
 import { UserController } from "../controllers/UserController";
+import { GameController } from "../controllers/gameController";
 import { passportMethods } from "../authentication/passportStrategies"
 import { verifyFacebookToken, verifyAccessToken } from "../authentication/token";
 
 export class Routes {
   public areaController: AreaController = new AreaController();
   public userController: UserController = new UserController();
+  public gameController: GameController = new GameController();
 
   constructor() {
     this.initConfig();
@@ -67,7 +69,7 @@ export class Routes {
   }
 
   private generateGameRoutes(app: express.Application) {
-    app
+    /*app
       .route("/areas")
       .get((req: Request, res: Response, next: NextFunction) => {
         // middleware
@@ -79,6 +81,20 @@ export class Routes {
     app.route("/areas/:areaId").get(this.areaController.getAreaWithId);
 
     app.route("/users").get(this.userController.getUsers);
-    app.route("/users/:userId").get();
+    app.route("/users/:userId").get();*/
+
+    app.route("/games")
+    .get(async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        console.log(req.headers)
+        console.log(req.query)
+        //await verifyAccessToken(req.get('authorization'));
+        next();
+      }
+      catch (err) {
+        res.status(400).send(`Invalid AccessToken: ${err} / Please try to connect again`);
+      }
+    }, this.gameController.getGamesWithGeolocationFilter)
+
   }
 }
