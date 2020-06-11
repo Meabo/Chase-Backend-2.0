@@ -4,12 +4,15 @@ import passport from "passport"
 import { Request, Response, NextFunction } from "express";
 import { AreaController } from "../controllers/areaController";
 import { UserController } from "../controllers/UserController";
+import { GameController } from "../controllers/gameController";
 import { passportMethods } from "../authentication/passportStrategies"
 import { verifyFacebookToken, verifyAccessToken } from "../authentication/token";
 
 export class Routes {
   public areaController: AreaController = new AreaController();
   public userController: UserController = new UserController();
+  public gameController: GameController = new GameController();
+  private devMode = true;
 
   constructor() {
     this.initConfig();
@@ -60,25 +63,23 @@ export class Routes {
   private generateOnboardingRoutes(app: express.Application) {
     app
     .route("/onboarding/player/create")
-    .post((req: Request, res, next) => {
-      console.log('Onboarding Request', req.query)
+    .post(async (req: Request, res, next) => {
+      !this.devMode && await verifyAccessToken(req.get('authorization'));
       next();
     }, this.userController.createPlayer)
   }
 
   private generateGameRoutes(app: express.Application) {
-    app
-      .route("/areas")
-      .get((req: Request, res: Response, next: NextFunction) => {
-        // middleware
-        console.log(`Request from: ${req.originalUrl}`);
-        console.log(`Request type: ${req.method}`);
+    app.route("/games")
+    .get(async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        !this.devMode && await verifyAccessToken(req.get('authorization'));
         next();
-      }, this.areaController.getAreas);
+      }
+      catch (err) {
+        res.status(400).send(`Invalid AccessToken: ${err} / Please try to connect again`);
+      }
+    }, this.gameController.getGamesWithGeolocationFilter)
 
-    app.route("/areas/:areaId").get(this.areaController.getAreaWithId);
-
-    app.route("/users").get(this.userController.getUsers);
-    app.route("/users/:userId").get();
   }
 }

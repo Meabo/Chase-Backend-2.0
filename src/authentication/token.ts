@@ -21,8 +21,12 @@ export const generateAccessToken = (userId) => {
 
 export const verifyAccessToken = async (encodedToken: string) => {
  const promisedDecodedToken: Promise<JwtToken> =  new Promise((resolve, reject) => {
+   if (!encodedToken || encodedToken.length === 0) reject("Error empty jwtToken")
         jwt.verify(encodedToken, configJwt.jwtSecret, (err, decoded: JwtToken) => {
-          if (err) reject(err);
+          if (err) {
+            console.log('JwtToken is missing', err)
+            reject(err);
+          }
           resolve(decoded);
         })
   })
