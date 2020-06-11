@@ -41,13 +41,13 @@ export const getGamesWithGeolocationFilterFromDb = async (lat: number, lon: numb
                         type: "Point", 
                         coordinates: [lat, lon] 
                     }, 
-                        $maxDistance: 1000
+                        $maxDistance: distance
                     } 
             }
         }
         const games = await Games
                     .find(query)
-                    .limit(100)
+                    .limit(limit)
                     .exec();
         console.log('query', query)
         console.log('games', games)
