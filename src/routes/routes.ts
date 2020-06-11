@@ -12,6 +12,7 @@ export class Routes {
   public areaController: AreaController = new AreaController();
   public userController: UserController = new UserController();
   public gameController: GameController = new GameController();
+  private devMode = true;
 
   constructor() {
     this.initConfig();
@@ -62,33 +63,17 @@ export class Routes {
   private generateOnboardingRoutes(app: express.Application) {
     app
     .route("/onboarding/player/create")
-    .post((req: Request, res, next) => {
-      console.log('Onboarding Request', req.query)
+    .post(async (req: Request, res, next) => {
+      !this.devMode && await verifyAccessToken(req.get('authorization'));
       next();
     }, this.userController.createPlayer)
   }
 
   private generateGameRoutes(app: express.Application) {
-    /*app
-      .route("/areas")
-      .get((req: Request, res: Response, next: NextFunction) => {
-        // middleware
-        console.log(`Request from: ${req.originalUrl}`);
-        console.log(`Request type: ${req.method}`);
-        next();
-      }, this.areaController.getAreas);
-
-    app.route("/areas/:areaId").get(this.areaController.getAreaWithId);
-
-    app.route("/users").get(this.userController.getUsers);
-    app.route("/users/:userId").get();*/
-
     app.route("/games")
     .get(async (req: Request, res: Response, next: NextFunction) => {
       try {
-        console.log(req.headers)
-        console.log(req.query)
-        //await verifyAccessToken(req.get('authorization'));
+        !this.devMode && await verifyAccessToken(req.get('authorization'));
         next();
       }
       catch (err) {

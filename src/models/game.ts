@@ -28,10 +28,10 @@ const gamesSchema: Schema = new Schema(
   },
   {collection: collection}
 );
-const Games = mongoose.model<IGame>(collection, gamesSchema);
-gamesSchema.index({geometry: "2dsphere"})
 
-export const getGamesWithGeolocationFilterFromDb = async (lat: number, lon: number, distance: number, limit: number)  => 
+const Games = mongoose.model<IGame>(collection, gamesSchema);
+
+export const getGamesWithGeolocationFilterFromDb = async (lat: number, lon: number, distance: string, limit: string)  => 
 {
     try {
         const query = { 
@@ -41,16 +41,14 @@ export const getGamesWithGeolocationFilterFromDb = async (lat: number, lon: numb
                         type: "Point", 
                         coordinates: [lat, lon] 
                     }, 
-                        $maxDistance: distance
+                        $maxDistance: +distance * 1000
                     } 
             }
         }
         const games = await Games
                     .find(query)
-                    .limit(limit)
+                    .limit(+limit)
                     .exec();
-        console.log('query', query)
-        console.log('games', games)
         return games;
       } catch (error) {
         throw error;
