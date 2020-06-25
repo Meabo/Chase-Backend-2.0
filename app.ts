@@ -10,5 +10,4 @@ server.listen(PORT, () => {
 
 gameServer.listen(SOCKET_PORT, "", 0, () => {
   console.log("Socket server listening on port " + SOCKET_PORT);
-  methods.createGameLobby({name: "lobby"})
 })

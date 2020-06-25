@@ -71,8 +71,6 @@ export default class GameLobby extends Room<GameLobbySchema> {
       this.onLeave(client, true);
     }
     if (data.action === "start") {
-      console.log('action', 'start');
-      console.log('Game in creation', this.state.getGameId());
        methods.createGame({name: this.state.getGameId()}).then((id) => {
         this.broadcast({action: "gameRoom", value: this.state.getGameId()})
        }).catch((err) => {
