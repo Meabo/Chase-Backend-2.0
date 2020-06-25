@@ -55,7 +55,7 @@ export default class GameSolo extends Schema {
     const bot_left = [48.8523546, 2.3012814];
 
     const bounds = [top_left, top_right, bot_right, bot_left, top_left];
-    return new Area(center, bounds, "ChampsDeMars");
+    return new Area("ChampsDeMars", center, bounds, );
   }
 
   selectArea(choosenArea) {

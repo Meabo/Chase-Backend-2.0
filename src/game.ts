@@ -2,6 +2,7 @@ import {Schema, type, ArraySchema, MapSchema} from "@colyseus/schema";
 import History from "./history";
 import Player from "./player";
 import ChaseObject from "./chaseobject";
+import {getGameById, IGame} from "./models/game"
 import {timer} from "rxjs";
 import Area from "./area";
 import {
@@ -32,11 +33,12 @@ export default class Game extends Schema {
 
   constructor(options: any) {
     super();
-    const {chaseObjectLoc, gameId, arealoc, bounds} = options;
-    this.chaseObject = new ChaseObject(chaseObjectLoc[0], chaseObjectLoc[1]);
-    this.timer = null;
-    this.gameId = gameId;
-    this.area = new Area(arealoc, bounds, "area");
+    getGameById(options.name).then((game: IGame) => {
+      this.chaseObject = this.generatePositionForChaseObject()
+      this.timer = null;
+      this.gameId = game.id;
+      this.area = new Area(game.area.name, game.area.location, game.area.bounds);
+    })
   }
 
   createPlayer(id: string, pseudo: string, lat: number, lon: number) {
@@ -94,9 +96,13 @@ export default class Game extends Schema {
     delete this.players[id];
   }
 
-  generateAnotherPositionForChaseObject() {
+  generatePositionForChaseObject() {
     const {latitude, longitude} = calcRandomPointInTriangle(this.area.getTriangles());
-    this.chaseObject = new ChaseObject(latitude, longitude);
+    return new ChaseObject(latitude, longitude);
+  }
+
+  generateAnotherPositionForChaseObject() {
+    this.chaseObject = this.generatePositionForChaseObject()
     this.guardian = null;
     this.alreadyGuardian = false;
   }

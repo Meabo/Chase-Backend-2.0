@@ -5,6 +5,8 @@ import { Request, Response, NextFunction } from "express";
 import { AreaController } from "../controllers/areaController";
 import { UserController } from "../controllers/UserController";
 import { GameController } from "../controllers/gameController";
+import { AvatarController } from "../controllers/avatarController";
+
 import { passportMethods } from "../authentication/passportStrategies"
 import { verifyFacebookToken, verifyAccessToken } from "../authentication/token";
 
@@ -12,6 +14,8 @@ export class Routes {
   public areaController: AreaController = new AreaController();
   public userController: UserController = new UserController();
   public gameController: GameController = new GameController();
+  public avatarController: AvatarController = new AvatarController();
+
   private devMode = true;
 
   constructor() {
@@ -27,6 +31,7 @@ export class Routes {
     this.generateGameRoutes(app);
     this.generateAndroidAuthenticationRoutes(app);
     this.generateOnboardingRoutes(app);
+    this.generateAvatarRoutes(app);
   }
 
   private initConfig() {
@@ -80,6 +85,30 @@ export class Routes {
         res.status(400).send(`Invalid AccessToken: ${err} / Please try to connect again`);
       }
     }, this.gameController.getGamesWithGeolocationFilter)
+    
+    app.route("/games/:gameId")
+    .get(async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        !this.devMode && await verifyAccessToken(req.get('authorization'));
+        next();
+      }
+      catch (err) {
+        res.status(400).send(`Invalid AccessToken: ${err} / Please try to connect again`);
+      }
+    }, this.gameController.getGameById)
 
+  }
+
+  private generateAvatarRoutes(app: express.Application) {
+    app.route("/avatars")
+    .get(async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        !this.devMode && await verifyAccessToken(req.get('authorization'));
+        next();
+      }
+      catch (err) {
+        res.status(400).send(`Invalid AccessToken: ${err} / Please try to connect again`);
+      }
+    }, this.avatarController.getAvatars)
   }
 }
