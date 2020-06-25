@@ -12,7 +12,7 @@ export default class Area extends Schema {
   @type("string")
   name: string;
 
-  constructor(location: number[], bounds: number[][], name: string) {
+  constructor(name: string, location: number[], bounds: number[][]) {
     super();
     this.location = new Location(location[0], location[1]);
     bounds.map((bound) => this.bounds.push(new Location(bound[0], bound[1])));

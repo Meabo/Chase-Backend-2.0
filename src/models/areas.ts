@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import {distanceByLoc} from "../utils/locationutils";
 
-const collection = "areas";
+export const AreasCollection = "Areas";
 
 export interface IArea extends Document {
   name: string;
@@ -39,10 +39,10 @@ const AreaSchema: Schema = new Schema(
     location: { type: pointSchema, required: true },
     bounds: { type: polygonSchema }
   },
-  {collection: collection}
+  {collection: AreasCollection}
 );
 
-const Areas = mongoose.model<IArea>(collection, AreaSchema);
+export const Areas = mongoose.model<IArea>(AreasCollection, AreaSchema);
 
 /*export const findAllAreas = async (lat: number, lng: number, limit: number) => {
   try {

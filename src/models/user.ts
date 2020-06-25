@@ -2,7 +2,7 @@ import mongoose, { Schema, Document, Mongoose, Query } from 'mongoose';
 import { AutoIncrement } from "./autoIncrementCounter"
 import { _calculateAge } from "../utils/calculators"
 
-const collection = "Users";
+export const UsersCollection = "Users";
 
 export interface IUser extends Document {
   _id: Schema.Types.ObjectId;
@@ -34,10 +34,10 @@ const usersSchema: Schema = new Schema(
     googleProfileId: {type: Object},
     avatarUrl: {type: String}
   },
-  {collection: collection}
+  {collection: UsersCollection}
 );
 
-const Users = mongoose.model<IUser>(collection, usersSchema);
+export const Users = mongoose.model<IUser>(UsersCollection, usersSchema);
 
 /*usersSchema.pre('save', (next: mongoose.HookNextFunction) => {
   const doc: any = this;
@@ -100,7 +100,7 @@ export const findOrCreateByFacebookProfile = async (profile: any) => {
   try {
     const user = await Users.findOneAndUpdate(
       { facebookProfileId: profile.id },
-      modelDocument,
+      modelDocument as any,
       {upsert: true, new: true, runValidators: true},
     ).exec();
     console.log(user);
@@ -113,7 +113,7 @@ export const findOrCreateByFacebookProfile = async (profile: any) => {
 export const createPlayerInDb = async (id: string, pseudo: string, avatarUrl: string) => {
   try {
     await Users.updateOne(
-      { "_id": id}, // Filter
+      { "_id": id as any}, // Filter
       {$set: {"pseudo": pseudo, "avatarUrl": avatarUrl}}, 
       {upsert: false});
   } catch (error) {

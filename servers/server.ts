@@ -7,6 +7,9 @@ import path from "path"
 import morgan from "morgan"
 import cookieParser from "cookie-parser"
 import expressSession from "express-session"
+import {Games} from "../src/models/game"
+import {methods} from "./socketServer"
+
 
 class Server {
   public app: express.Application = express();
@@ -29,6 +32,8 @@ class Server {
     this.app.use(morgan("dev"));
     this.app.use(cookieParser())
     this.app.use(bodyParser.urlencoded({ extended: true }));
+    this.app.use(express.static('public'))
+
     this.app.use(expressSession({ secret: 'keyboard cat', resave: true, saveUninitialized: true }));
   }
 
@@ -42,6 +47,15 @@ class Server {
     this.app.use(passportMethods.initSession());
   }
 
+  private async createLobbyGameRooms() {
+    const games = mongoose.connection.db.collection("Games")
+    const fetchedGames = await Games.find().exec();
+    fetchedGames.map(game => {
+      methods.createGameLobby({name: `lobby-${game.id}`, gameId: game.id});
+      console.log(`lobby-${game.id}`);
+    })
+  }
+
   private mongoSetup(): void {
     mongoose
       .connect(this.mongoUrl, {
@@ -49,8 +63,9 @@ class Server {
         useUnifiedTopology: true,
         useFindAndModify: false,
       })
-      .then(() => {
+      .then(async () => {
        console.log("MongoDB connected…");
+       await this.createLobbyGameRooms();
       })
       .catch(err => console.log("Error", err));
   }

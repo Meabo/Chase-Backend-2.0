@@ -33,9 +33,15 @@ export const methods = {
   },
   createGameLobby: (data) => {
     gameServer.define(data.name, GameLobby, data);
+    console.log("Created Gamelobby");
   },
   createGame: (data) => {
-    gameServer.define(data.name, GameInstance, data);
+    console.log('Creating game', data);
+    return new Promise((resolve, reject) => {
+      console.log('Creating game inside Promise');
+      gameServer.define(data.name, GameInstance, data)
+      return resolve(true);
+    })
   },
   createSoloGame: (name, options) => {
     try {

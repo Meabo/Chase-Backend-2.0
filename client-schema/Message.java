@@ -11,11 +11,17 @@ import io.colyseus.serializer.schema.annotations.SchemaClass;
 import io.colyseus.serializer.schema.annotations.SchemaField;
 
 @SchemaClass
-public class Location extends Schema {
-	@SchemaField("0/number")	
-	public float lat = 0;
+public class Message extends Schema {
+	@SchemaField("0/string")	
+	public String id = "";
 
-	@SchemaField("1/number")	
-	public float lon = 0;
+	@SchemaField("1/string")	
+	public String text = "";
+
+	@SchemaField("2/string")	
+	public String sender = "";
+
+	@SchemaField("3/int64")	
+	public long time = 0;
 }
 

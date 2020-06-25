@@ -1,35 +1,59 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import {IArea, pointSchema} from './areas'
-const collection = "Games";
+import {pointSchema, AreasCollection, IArea} from "./areas"
+import {UsersCollection, IUser} from './user'
+import {BrandsCollection, IBrand} from './brands'
+
+export const GamesCollection = "Games";
 
 export interface IGame extends Document {
   _id: Schema.Types.ObjectId;
   name: string;
   location: Array<number>;
-  creatorId: Schema.Types.ObjectId;
+  creatorId: IUser;
   createdAt: Date;
   updatedAt: Date;
   gamePictureUrl: string;
   capacity: number;
   state: number;
+  brand: IBrand;
+  area: IArea;
 }
 
-const gamesSchema: Schema = new Schema(
+const GamesSchema: Schema = new Schema(
   { 
     _id: { type: Schema.Types.ObjectId, auto: true },
-    name: { type: String, required: true },
-    location: { type: pointSchema, required: true },
-    creatorId: { type: Schema.Types.ObjectId },
-    createdAt: { type: Date, default: Date.now, required: true},
-    updatedAt: { type: Date, default: Date.now, required: true },
+    name: { type: String },
+    location: { type: pointSchema },
+    creator: { type: Schema.Types.ObjectId, ref: UsersCollection},
+    createdAt: { type: Date, default: Date.now},
+    updatedAt: { type: Date, default: Date.now },
     gamePictureUrl: {type: String},
     capacity: {type: Number},
-    state: {type: Number}
+    state: {type: Number},
+    brand: { type: Schema.Types.ObjectId, ref: BrandsCollection},
+    area: { type: Schema.Types.ObjectId, ref: AreasCollection},
   },
-  {collection: collection}
+  {collection: GamesCollection}
 );
 
-const Games = mongoose.model<IGame>(collection, gamesSchema);
+export const Games = mongoose.model<IGame>(GamesCollection, GamesSchema);
+
+export const getGameById = async (id: String)  => 
+{
+    try {
+        const query = {"_id": id};
+        const games = await Games
+                    .findById(query)
+                    .populate("creator", "pseudo avatarUrl")
+                    .populate("brand", "brandName brandLogoUrl")
+                    .populate("area", "location bounds")
+                    .exec();
+        return games;
+      } catch (error) {
+        throw error;
+      }
+};
+
 
 export const getGamesWithGeolocationFilterFromDb = async (lat: number, lon: number, distance: string, limit: string)  => 
 {

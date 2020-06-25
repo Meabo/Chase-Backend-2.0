@@ -10,11 +10,5 @@ server.listen(PORT, () => {
 
 gameServer.listen(SOCKET_PORT, "", 0, () => {
   console.log("Socket server listening on port " + SOCKET_PORT);
-  soloplaying();
-});
-
-function soloplaying() {
-  methods.createSoloGame("solo", {
-    gameId: "sologame0"}
-  );
-}
+  methods.createGameLobby({name: "lobby"})
+})
