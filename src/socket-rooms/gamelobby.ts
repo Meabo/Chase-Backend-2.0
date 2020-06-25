@@ -2,18 +2,15 @@ import { Room, Client } from "colyseus";
 import { eventBus } from "../utils/emitter/emitter";
 import { PlayerLobby, Message, GameLobbySchema } from "../gamelobby";
 import { methods } from "../../servers/socketServer";
-import {ChasePresenter} from "./Presenters/chasePresenter"
 import Player from "src/player";
 
 
 export default class GameLobby extends Room<GameLobbySchema> {
   // When room is initialized
-  chasePresenter: ChasePresenter;
 
   onCreate(options: any) {
     console.log("RoomLobby created", options);
     this.setState(new GameLobbySchema(options));
-    //this.chasePresenter = new ChasePresenter(this.roomId);
   }
 
   // Checks if a new client is allowed to join. (default: `return true`)
