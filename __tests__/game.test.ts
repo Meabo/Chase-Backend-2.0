@@ -1,4 +1,6 @@
 import {assert, expect} from "chai";
+import Area from "../src/area";
+import ChaseObject from "../src/chaseobject";
 import Game from "../src/game";
 import Player from "../src/player";
 import {getResults} from "../src/results";
@@ -13,21 +15,24 @@ describe("Game Scenarios", () => {
       chaseObjectLoc: [1, 1],
       gameId: i,
       arealoc: loc,
-      bounds: polygon
+      bounds: polygon,
+      test: true,
     };
     game = new Game(options);
-    game.createPlayer("1", "player1", 0, 0);
-    game.createPlayer("2", "player2", 0, 0);
-    game.createPlayer("3", "player3", 0, 0);
-    game.createPlayer("4", "player4", 0, 0);
+    game.setChaseObject(new ChaseObject(5, 5));
+    game.setArea(new Area("Test", loc, polygon));
+    game.createPlayer("1", "player1", 1, 1);
+    game.createPlayer("2", "player2", 1, 1);
+    game.createPlayer("3", "player3", 1, 1);
+    game.createPlayer("4", "player4", 1, 1);
     i++;
   });
 
-  it("Scenario 1: Player 1 moves and catches the ChaseObject", async () => {
-    game.movePlayer("1", {lat: 1, lon: 1});
-    game.movePlayer("2", {lat: 0, lon: 1});
-    game.movePlayer("3", {lat: 0, lon: 1});
-    game.movePlayer("4", {lat: 0, lon: 0});
+  test("Scenario 1: Player 1 moves and catches the ChaseObject", async () => {
+    game.movePlayer("1", {lat: 5, lon: 5});
+    game.movePlayer("2", {lat: 1, lon: 1});
+    game.movePlayer("3", {lat: 2, lon: 1});
+    game.movePlayer("4", {lat: 1, lon: 1});
 
     const res2 = await game.catchChaseObject("2");
     const res3 = await game.catchChaseObject("3");
@@ -40,11 +45,11 @@ describe("Game Scenarios", () => {
     assert.equal(game.getGuardian().pseudo, "player1");
   });
 
-  it("Scenario 2: Player 1 moves and catches the ChaseObject, Player2 steals him", async () => {
-    game.movePlayer("1", {lat: 1, lon: 1});
-    game.movePlayer("2", {lat: 0, lon: 1});
-    game.movePlayer("3", {lat: 0, lon: 1});
-    game.movePlayer("4", {lat: 0, lon: 0});
+  test("Scenario 2: Player 1 moves and catches the ChaseObject, Player2 steals him", async () => {
+    game.movePlayer("1", {lat: 5, lon: 5});
+    game.movePlayer("2", {lat: 1, lon: 1});
+    game.movePlayer("3", {lat: 1, lon: 1});
+    game.movePlayer("4", {lat: 3, lon: 0});
 
     const res2 = await game.catchChaseObject("2");
     const res3 = await game.catchChaseObject("3");
@@ -56,22 +61,22 @@ describe("Game Scenarios", () => {
     assert.equal(res4, false);
     assert.equal(game.getGuardian().pseudo, "player1");
 
-    game.movePlayer("2", {lat: 1, lon: 1});
+    game.movePlayer("2", {lat: 5, lon: 5});
     const resSteal = await game.stealChaseObject("2");
     assert.equal(resSteal, true);
     assert.equal(game.getGuardian().pseudo, "player2");
   });
 
-  it("Scenario 3: Guardian Reset => Player 1 moves and catches the ChaseObject, Player2 steals him and exit the area, ChaseObject backs randomly in the map", async () => {
+  test("Scenario 3: Guardian Reset => Player 1 moves and catches the ChaseObject, Player2 steals him and exit the area, ChaseObject backs randomly in the map", async () => {
     const chaseobjectloc = game.getChaseObjectLocation();
-    game.movePlayer("1", {lat: 1, lon: 1});
-    game.movePlayer("2", {lat: 0, lon: 1});
-    game.movePlayer("3", {lat: 0, lon: 1});
-    game.movePlayer("4", {lat: 0, lon: 0});
+    game.movePlayer("1", {lat: 5, lon: 5});
+    game.movePlayer("2", {lat: 1, lon: 1});
+    game.movePlayer("3", {lat: 2, lon: 1});
+    game.movePlayer("4", {lat: 5, lon: 10});
 
     const res1 = await game.catchChaseObject("1");
     assert.equal(res1, true);
-    game.movePlayer("2", {lat: 1, lon: 1});
+    game.movePlayer("2", {lat: 5, lon: 5});
     const resSteal = await game.stealChaseObject("2");
     assert.equal(resSteal, true);
     assert.equal(game.getGuardian().pseudo, "player2");
@@ -80,16 +85,16 @@ describe("Game Scenarios", () => {
     assert.equal(game.getGuardian(), null);
   });
 
-  it("Scenario 4: Announcing the winner and scoreboard", async () => {
+  test("Scenario 4: Announcing the winner and scoreboard", async () => {
     const chaseobjectloc = game.getChaseObjectLocation();
-    game.movePlayer("1", {lat: 1, lon: 1});
-    game.movePlayer("2", {lat: 0, lon: 1});
-    game.movePlayer("3", {lat: 0, lon: 1});
-    game.movePlayer("4", {lat: 0, lon: 0});
+    game.movePlayer("1", {lat: 5, lon: 5});
+    game.movePlayer("2", {lat: 2, lon: 1});
+    game.movePlayer("3", {lat: 2, lon: 1});
+    game.movePlayer("4", {lat: 2, lon: 2});
 
     const res1 = await game.catchChaseObject("1");
     assert.equal(res1, true);
-    game.movePlayer("2", {lat: 1, lon: 1});
+    game.movePlayer("2", {lat: 5, lon: 5});
     const resSteal = await game.stealChaseObject("2");
     assert.equal(resSteal, true);
     assert.equal(game.getGuardian().pseudo, "player2");

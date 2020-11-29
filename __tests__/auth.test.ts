@@ -1,4 +1,3 @@
-import {assert, expect} from "chai";
 import sinon from "sinon";
 import User from "../src/user";
 import AuthGateway from "../src/firebase";
@@ -8,25 +7,26 @@ describe("Authentication", () => {
   let new_user;
   const callback = sinon.fake.returns(true);
 
-  before(() => {
+  beforeAll(() => {
     new_user = new User("aboumehdi.pro@gmail.com");
     sinon.replace(AuthGateway, "SignUp", callback);
     sinon.replace(AuthGateway, "SignIn", callback);
     sinon.replace(AuthGateway, "SignOut", callback);
   });
 
-  it("Should Signup a user", async () => {
+
+  test("Should Signup a user", async () => {
     const isSignup = await AuthGateway.SignUp(new_user.getEmail(), "password");
-    assert.equal(isSignup, true);
+    expect(isSignup).toBeTruthy()
   });
 
-  it("Should Login a user", async () => {
+  test("Should Login a user", async () => {
     const isSignIn = await AuthGateway.SignIn(new_user.getEmail(), "password");
-    assert.equal(isSignIn, true);
+    expect(isSignIn).toBeTruthy()
   });
 
-  it("Should Logout a user", async () => {
+  test("Should Logout a user", async () => {
     const isLogOut = await AuthGateway.SignOut();
-    assert.equal(isLogOut, true);
+    expect(isLogOut).toBeTruthy()
   });
 });

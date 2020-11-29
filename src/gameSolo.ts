@@ -29,7 +29,6 @@ export default class GameSolo extends Schema {
   @type(ChaseObject)
   chaseObject: ChaseObject;
 
-  @type(Area)
   private area: Area;
 
   private gameId: string;

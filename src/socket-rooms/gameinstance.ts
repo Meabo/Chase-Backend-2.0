@@ -4,7 +4,10 @@ import Game from "../game";
 export default class GameInstance extends Room<Game> {
   // When room is initialized
   onCreate(options: any) {
-    this.setState(new Game(options));
+    this.setState(new Game({fetch: true, ...options}));
+    const time = 30;
+    const delay = 1 * 1000;
+    //setTimeout(() => this.beginGame(time), delay);
   }
   // Checks if a new client is allowed to join. (default: `return true`)
   requestJoin(options: any, isNew: boolean) {
@@ -13,20 +16,25 @@ export default class GameInstance extends Room<Game> {
   // Authorize client based on provided options before WebSocket handshake is complete
   /*onAuth(options) */
   beginGame(time: number) {
-    console.log("GameBegins");
+    console.log("gameBegins");
     this.broadcast("gameBegins");
-    this.clock.setTimeout(() => this.finishedGame(), time * 1000);
+    //this.clock.setTimeout(() => this.finishedGame(), time * 1000);
   }
+  
   finishedGame() {
-    console.log("GameFinished");
+    console.log("gameFinished");
     this.broadcast("gameFinished");
-    this.disconnect();
+    //this.disconnect();
   }
   // When client successfully join the room
   onJoin(client: Client, options: any, auth) {
-    //console.log(`${client.sessionId} join GameInstance.`);
+    console.log(`${client.sessionId} join GameInstance.`);
+    if (!options || options.pseudo == null || options.lat == null || options.lon == null)
+      throw new Error("Player doesn't have a pseudo, or a position");
+
     const {pseudo, lat, lon} = options;
     this.state.createPlayer(client.sessionId, pseudo, lat, lon);
+    this.send(client, "gameBegins");
   }
 
   // When a client sends a message

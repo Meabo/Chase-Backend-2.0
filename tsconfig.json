@@ -4,13 +4,12 @@
       "esModuleInterop": true,
       "allowSyntheticDefaultImports": true,
       "target": "es6",
-      "strict": false,
       "noImplicitAny": false,
       "moduleResolution": "node",
       "sourceMap": true,
       "outDir": "dist",
       "baseUrl": ".",
-      "typeRoots" : ["src/types/*.d.ts", "mocha"],
+      "typeRoots" : ["src/types/*.d.ts", "jest", "node_modules"],
       "experimentalDecorators": true
   },
   "include": [

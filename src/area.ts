@@ -2,20 +2,16 @@ import {Schema, type, ArraySchema} from "@colyseus/schema";
 import {Location} from "../src/location";
 import {robustPointInPolygon, triangulate} from "./utils/locationutils";
 
-export default class Area extends Schema {
-  @type(Location)
-  location: Location;
+export default class Area {
+  location:  number[];
 
-  @type([Location])
-  bounds = new ArraySchema<Location>();
+  bounds: number[][]
 
-  @type("string")
   name: string;
 
   constructor(name: string, location: number[], bounds: number[][]) {
-    super();
-    this.location = new Location(location[0], location[1]);
-    bounds.map((bound) => this.bounds.push(new Location(bound[0], bound[1])));
+    this.location = location;
+    this.bounds = bounds;
     this.name = name;
   }
 
@@ -30,14 +26,14 @@ export default class Area extends Schema {
   }
 
   getLocation() {
-    return this.location.getLocation();
+    return this.location
   }
 
   getBounds() {
-    return this.bounds.map(bound => bound.getLocation());
+    return this.bounds;
   }
 
   getTriangles() {
-      return triangulate(this.getBounds());
+    return triangulate(this.getBounds());
   }
 }

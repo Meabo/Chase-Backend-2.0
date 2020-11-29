@@ -1,32 +1,36 @@
 const port: number = 5000;
 const socketUrl: string = `ws://localhost:${port}`;
-import {Client, Room} from "colyseus.js";
+import { Client, Room } from "colyseus.js";
 import Area from "../src/area";
-import {methods, gameServer} from "../servers/socketServer";
-import {assert, expect} from "chai";
+import { methods, gameServer } from "../servers/socketServer";
+import { assert, expect } from "chai";
+import sinon from "sinon";
+import GameLobby from "../src/socket-rooms/gamelobby"
+import Player from "../src/player";
+import {PlayerLobby} from "../src/gamelobby";
 
 const areas: Area[] = [];
 const bounds: number[][] = [
   [48.8569443, 2.2940138],
   [48.8586221, 2.2963717],
   [48.8523546, 2.3012814],
-  [48.8539637, 2.3035665]
+  [48.8539637, 2.3035665],
 ];
 const loc = [48.8556475, 2.2986304];
 
 describe("Colyseus : Unit it on Events", () => {
-  before(async () => {
-    const area = new Area([48.8556475, 2.2986304], bounds, "AreaA");
-    const area1 = new Area([48.8556475, 2.2986304], bounds, "AreaB");
+  beforeAll(async () => {
+    const area = new Area("AreaA", [48.8556475, 2.2986304], bounds);
+    const area1 = new Area("AreaB", [48.8556475, 2.2986304], bounds);
     areas.push(area, area1);
     await methods.init(areas);
     gameServer.listen(port);
   });
 
-  after(async () => {
+  afterAll(async () => {
     await new Promise((resolve, reject) => {
       gameServer.gracefullyShutdown();
-      resolve();
+      resolve(true);
     });
   });
 
@@ -41,91 +45,94 @@ describe("Colyseus : Unit it on Events", () => {
       room_client.leave();
     });
     it("Should check that the socket is connected", (done) => {
-      client.joinOrCreate("discovery").then(room => {
-        room_client = room;
-        done();
-      }).catch(err => console.log("something wrong happened:", err.message))
-
+      client
+        .joinOrCreate("discovery")
+        .then((room) => {
+          room_client = room;
+          done();
+        })
+        .catch((err) => console.log("something wrong happened:", err.message));
     });
   });
 });
 
-  describe("Welcome to Discovery", () => {
-    let player1: Client;
-    let room_player1: Room;
-    beforeEach(() => {
-      player1 = new Client(socketUrl);
-    });
+describe("Welcome to Discovery", () => {
+  let player1: Client;
+  let roomPlayer1: Room;
+  beforeEach(() => {
+    player1 = new Client(socketUrl);
+  });
 
-    afterEach(() => {
-      room_player1.leave();
-    });
+  afterEach(() => {
+    roomPlayer1.leave();
+  });
 
-    it("Players should receive Areas in Discovery mode", async () => {
-     room_player1 = await player1.joinOrCreate("discovery");
-     room_player1.send({action: "getAreas"});
-     room_player1.onMessage((areas_discovery) => {
-      assert.lengthOf(areas_discovery, 2) 
+  it("Players should receive Areas in Discovery mode", async () => {
+    roomPlayer1 = await player1.joinOrCreate("discovery");
+    roomPlayer1.send({ action: "getAreas" });
+    roomPlayer1.onMessage((areas_discovery) => {
+      assert.lengthOf(areas_discovery, 2);
     });
+  });
+});
+
+describe("Game Engine", () => {
+  let player1: Client;
+  let player2: Client;
+  let roomPlayer1: Room;
+  let roomPlayer2: Room;
+  const roomName = "SuperGameBegins";
+
+  beforeAll(async () => {
+    await methods.createGame({
+      name: roomName,
+      chaseObjectLoc: [1, 1],
+      arealoc: loc,
+      bounds,
+      gameId: "1",
     });
   });
 
-  describe("Game Engine", () => {
-    let player1: Client;
-    let player2: Client;
-    let room_player1: Room;
-    let room_player2: Room;
-    const room_name = "SuperGameBegins";
+  beforeEach(() => {
+    player1 = new Client(socketUrl);
+    player2 = new Client(socketUrl);
+  });
 
-    before(() => {
-      methods.createGame({name: room_name})
-    })
-
-    beforeEach(() => {
-      player1 = new Client(socketUrl);
-      player2 = new Client(socketUrl);
+  afterEach(async () => {
+    return await new Promise((resolve, reject) => {
+      roomPlayer1.leave();
+      roomPlayer2.leave();
+      resolve();
     });
-
-    afterEach(async () => {
-      return await new Promise((resolve, reject) => {
-        room_player1.leave();
-        room_player2.leave();
-        resolve();
-      });
-    });
+  });
 
   it("Should receive player's update ", async () => {
     try {
-      room_player1 = await player1.joinOrCreate(room_name,  {
-        chaseObjectLoc: [1, 1],
-        arealoc: loc,
-        bounds,
-        gameId: "1",
+      roomPlayer1 = await player1.joinOrCreate(roomName, {
         pseudo: "player1",
-        lat: 0,
-        lon: 0
+        lat: 5,
+        lon: 5,
       });
-      room_player2 = await player2.join(room_name,  {
+      roomPlayer2 = await player2.join(roomName, {
         pseudo: "player2",
-        lat: 0,
-        lon: 0
+        lat: 1,
+        lon: 1,
       });
-      const expected_location = {lat: 1, lon: 1}
-      room_player1.send({action: "move", payload: expected_location})
-      await new Promise(resolve => setTimeout(resolve, 100));
+      const expected_location = { lat: 1, lon: 1 };
+      roomPlayer1.send({ action: "move", payload: expected_location });
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
-      const player1_state: any = Object.values(room_player2.state.players)[0];
-      assert.equal(player1_state.lat, expected_location.lat)
-      assert.equal(player1_state.lon, expected_location.lon)
+      const player1_state: any = Object.values(roomPlayer2.state.players)[0];
+      assert.equal(player1_state.lat, expected_location.lat);
+      assert.equal(player1_state.lon, expected_location.lon);
+    } catch (err) {
+      console.log("Error", err);
     }
-    catch (err) {
-      console.log('Error', err)
-    }
-  })
+  });
 
-  it("Should catch ChaseObject if a player is at the same location of the ChaseObject",  async() => {
+  it("Should catch ChaseObject if a player is at the same location of the ChaseObject", async () => {
     /*try {
-      room_player1 = await player1.joinOrCreate(room_name,  {
+      roomPlayer1 = await player1.joinOrCreate(roomName,  {
       chaseObjectLoc: [1, 1],
       arealoc: loc,
       bounds,
@@ -134,25 +141,24 @@ describe("Colyseus : Unit it on Events", () => {
       lat: 1,
       lon: 1
     });
-    room_player2 = await player2.join(room_name,  {
+    roomPlayer2 = await player2.join(roomName,  {
       pseudo: "player2",
       lat: 0,
       lon: 0
     });
     
-    room_player1.send({action: "catch"});
+    roomPlayer1.send({action: "catch"});
     await new Promise(resolve => setTimeout(resolve, 100));
-    const guardian: string = room_player2.state.guardian.pseudo;
+    const guardian: string = roomPlayer2.state.guardian.pseudo;
     assert.equal("guardian", guardian) }
     catch (err) {
       console.log('Catch error', err);
     }*/
   });
-  
-  
+
   it("Should steal ChaseObject if a player is at the same location of the guardian", async () => {
-   /* try {
-      room_player1 = await player1.joinOrCreate(room_name,  {
+    /* try {
+      roomPlayer1 = await player1.joinOrCreate(roomName,  {
         chaseObjectLoc: [1, 1],
         arealoc: loc,
         bounds,
@@ -162,59 +168,74 @@ describe("Colyseus : Unit it on Events", () => {
         lon: 1
       });
       
-      room_player2 = await player2.join(room_name, {
+      roomPlayer2 = await player2.join(roomName, {
           pseudo: "stealer",
           lat: 1,
           lon: 1
       });
-      room_player1.send({action: "catch"});
-      room_player2.send({action: "steal"});
+      roomPlayer1.send({action: "catch"});
+      roomPlayer2.send({action: "steal"});
       await new Promise(resolve => setTimeout(resolve, 50));
-      assert.equal(room_player2.state.guardian.pseudo, "stealer");
+      assert.equal(roomPlayer2.state.guardian.pseudo, "stealer");
     } catch (err) {
       console.log(err)
     } */
+  });
+});
+describe("Ready feature", () => {
+  let room: GameLobby;
+  let player1: Client;
+  let player2: Client;
+  let roomPlayer1: Room;
+  let roomPlayer2: Room;
+  let id = 0;
+  let id_1 = 0;
+
+  beforeAll(async () => {
+    methods.createGameLobby({ name: "SuperGame" });
+
+    player1 = new Client(socketUrl);
+    player2 = new Client(socketUrl);
+  });
+
+  afterAll(async () => {
+    return await new Promise((resolve, reject) => {
+      roomPlayer1.leave();
+      roomPlayer2.leave();
+      resolve(true);
     });
   });
-  describe('Ready feature', () => {
-    let player1: Client;
-    let player2: Client;
-    let room_player1: Room;
-    let room_player2: Room;
 
-    before(async () => {
-      methods.createGameLobby({ name: 'SuperGame' });
-      player1 = new Client(socketUrl);
-      player2 = new Client(socketUrl);
-    });
+  it("Players ready in GameRoom", async () => {
+    const room: Room = await player1.create("SuperGame");
 
-    after(async () => {
-      room_player1.leave();
-      room_player2.leave();
-    });
+   
+    const onJoinStub = sinon.stub(GameLobby.prototype, "onJoin").callsFake((client, options, auth) => {
+      console.log(`${client.sessionId} join GameLobbyStub.`);
+      client.id = `${id}`;
+      room.state.players[client.id] = new PlayerLobby(client.id, "pseudo", "url");
+      room.state.creator_name = (room.state.players[Object.keys(room.state.players)[0]] as PlayerLobby).pseudo
+      id++;
+    });   
 
-    it('Players ready in GameRoom', async () => {
-      room_player1 = await player1.joinOrCreate('SuperGame');
-      room_player2 = await player2.join('SuperGame');
+    const onMessageStub = sinon.stub(GameLobby.prototype, "onMessage").callsFake((client, data) => {
+      console.log('onMessageStub');
+      const currentPlayer: PlayerLobby = room.state.players[client.id];
+      currentPlayer.setReady(!currentPlayer.isReady());
+      currentPlayer.isReady() ? room.state.counter++ : room.state.counter--;
+      const numberOfPlayers = Object.keys(room.state.players).length;
+      const numberOfPlayersThatAreReady = room.state.counter;
+      console.log('number of players', numberOfPlayers, "numberOfPlayersThatAreReady", numberOfPlayersThatAreReady)
+      const action = numberOfPlayers === numberOfPlayersThatAreReady ? "everyone_ready" : "everyone_not_ready"
+      action === "everyone_ready" && sinon.assert.calledTwice(onMessageStub);
+    });   
 
-     
-      const player1_ready = new Promise((resolve, reject) => {
-        room_player1.onMessage((message) => {
-          if (message.action === 'everyone_ready') 
-          resolve(true);
-        });
-      });
-      const player2_ready = new Promise((resolve, reject) => {
-        room_player2.onMessage((message) => {
-          if (message.action === 'everyone_ready') 
-          resolve(true);
-        });
-      });
-      Promise.all([player1_ready, player2_ready]).then((values) => {
-          assert.deepEqual(values, [true, true]);
-      })
-      
-      room_player1.send({ action: 'ready', pseudo: 'player1' });
-      room_player2.send({ action: 'ready', pseudo: 'player2' });
-    });
+    roomPlayer1 = await player1.join("SuperGame")
+    roomPlayer2 = await player2.join("SuperGame");
+    sinon.assert.calledTwice(onJoinStub);
+
+    roomPlayer1.send({ action: "ready", pseudo: "player1" });
+    roomPlayer2.send({ action: "ready", pseudo: "player2" });
+
   });
+});

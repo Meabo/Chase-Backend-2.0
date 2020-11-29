@@ -7,7 +7,6 @@ class State extends Schema {
   @type([History])
   history = new ArraySchema<History>();
 
-  @type([Area])
   areas = new ArraySchema<Area>();
 
   constructor(areas: Area[]) {
