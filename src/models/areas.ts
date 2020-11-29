@@ -5,8 +5,14 @@ export const AreasCollection = "Areas";
 
 export interface IArea extends Document {
   name: string;
-  location: Array<any>;
-  bounds: Array<any>;
+  location: {
+    type: string,
+    coordinates: number[]
+  };
+  bounds: {
+    type: string,
+    coordinates: number[][]
+  };
 }
 
 export const pointSchema = new mongoose.Schema({
@@ -28,7 +34,7 @@ const polygonSchema = new mongoose.Schema({
     required: true
   },
   coordinates: {
-    type: [[[Number]]], // Array of arrays of arrays of numbers
+    type: [[Number]], // Array of arrays of arrays of numbers
     required: true
   }
 });

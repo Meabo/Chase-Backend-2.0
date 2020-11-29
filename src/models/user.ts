@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document, Mongoose, Query } from 'mongoose';
-import { AutoIncrement } from "./autoIncrementCounter"
 import { _calculateAge } from "../utils/calculators"
 
 export const UsersCollection = "Users";

@@ -10,7 +10,7 @@ describe("Location engine", () => {
   const loc = [48.8556475, 2.2986304];
   const polygon = [[1, 1], [1, 2], [2, 2], [2, 1]];
 
-  before(() => {
+  beforeAll(() => {
     player = new Player("Mehdi", 48.8556475, 2.2986304);
 
     const top_l = [48.858622, 2.296372]
@@ -25,28 +25,28 @@ describe("Location engine", () => {
     const bot_left = [48.8523546, 2.3012814];
 
     bounds = [top_left, top_right, bot_right, bot_left];
-    area = new Area(loc, bounds, "test");
+    area = new Area("Test", loc, bounds);
   });
 
-  it("Polygon: Point Inside the polygon, should return -1", async () => {
+  test("Polygon: Point Inside the polygon, should return -1", async () => {
     assert.equal(robustPointInPolygon(polygon, [1.5, 1.5]), -1);
   });
 
-  it("Polygon: Point Outside the polygon, should return 1", async () => {
+  test("Polygon: Point Outside the polygon, should return 1", async () => {
     assert.equal(robustPointInPolygon(polygon, [3, 3]), 1);
   });
-  it("Polygon: Point At the limit of the polygon, should return 0", async () => {
+  test("Polygon: Point At the limit of the polygon, should return 0", async () => {
     assert.equal(robustPointInPolygon(polygon, [2, 2]), 0);
   });
 
-  it("Player: Should return -1 if a player is inside the area", async () => {
+  test("Player: Should return -1 if a player is inside the area", async () => {
     assert.equal(
       robustPointInPolygon(area.getBounds(), player.getLocation()),
       -1
     );
   });
 
-  it("Player: Should return 1 if a player is outside the area", async () => {
+  test("Player: Should return 1 if a player is outside the area", async () => {
     player = new Player("Mehdi", 48.8514708, 2.2972489);
     assert.equal(
       robustPointInPolygon(area.getBounds(), player.getLocation()),
@@ -54,7 +54,7 @@ describe("Location engine", () => {
     );
   });
 
-  it("Robust Polygon tests", async () => {
+  test("Robust Polygon tests", async () => {
     assert.equal(robustPointInPolygon(polygon, [1.5, 1.5]), -1);
     assert.equal(robustPointInPolygon(polygon, [1.2, 1.9]), -1);
     assert.equal(robustPointInPolygon(polygon, [0, 1.9]), 1);

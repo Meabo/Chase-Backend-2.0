@@ -50,8 +50,9 @@ class Server {
   private async createLobbyGameRooms() {
     const games = mongoose.connection.db.collection("Games")
     const fetchedGames = await Games.find().exec();
-    fetchedGames.map(game => {
+    fetchedGames.map(async game => {
       methods.createGameLobby({name: `lobby-${game.id}`, gameId: game.id});
+      await methods.createGame({name: game.id, gameId: game.id});
       console.log(`lobby-${game.id}`);
     })
   }

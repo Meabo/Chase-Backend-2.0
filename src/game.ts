@@ -6,9 +6,10 @@ import {getGameById, IGame} from "./models/game"
 import {timer} from "rxjs";
 import Area from "./area";
 import {
+  distance,
   distanceByLoc,
-  robustPointInPolygon,
-  calcRandomPointInTriangle
+  calcRandomPointInTriangle,
+  robustPointInPolygon
 } from "./utils/locationutils";
 
 export default class Game extends Schema {
@@ -24,21 +25,48 @@ export default class Game extends Schema {
   @type(Player)
   private guardian: Player;
 
-  @type(Area)
   private area: Area;
-
   private timer;
   private alreadyGuardian: boolean = false;
   private gameId: string;
+  private generateChaseObjectDelay: number = 3000;
+  private distanceToCatch: number = 10000;
+  private distanceToSteal: number = 10000;
+  private scoreCatch: number = 1000;
+  private scoreSteal: number = 1000;
 
   constructor(options: any) {
     super();
-    getGameById(options.name).then((game: IGame) => {
-      this.chaseObject = this.generatePositionForChaseObject()
+    if (options.fetch) {
+      this.fetchGameFromDb(options.name);
+      return;
+    }
+    this.initWithOptions(options);
+  }
+
+  initWithOptions(options: any) {
+    this.area = new Area(options.name, options.arealoc, options.bounds);
+    this.chaseObject = new ChaseObject(options.chaseObjectLoc[0], options.chaseObjectLoc[1]);
+    this.timer = null;
+    this.gameId = options.gameId;
+  }
+
+
+  fetchGameFromDb(name: string) {
+    getGameById(name).then((game: IGame) => {
+      this.area = new Area(game.area.name, game.area.location.coordinates, game.area.bounds.coordinates);
       this.timer = null;
       this.gameId = game.id;
-      this.area = new Area(game.area.name, game.area.location, game.area.bounds);
-    })
+      setTimeout(() => this.chaseObject = this.generatePositionForChaseObject(), this.generateChaseObjectDelay)
+    }).catch((err) => {throw new Error(err)})
+  }
+
+  setArea(area: Area) {
+    this.area = new Area(area.getName(), area.getLocation(), area.getBounds());
+  }
+
+  setChaseObject(chaseObject: ChaseObject) {
+    this.chaseObject = new ChaseObject(chaseObject.getLocation()[0], chaseObject.getLocation()[1]);
   }
 
   createPlayer(id: string, pseudo: string, lat: number, lon: number) {
@@ -53,12 +81,17 @@ export default class Game extends Schema {
         [lat, lon],
         this.chaseObject.getLocation()
       );
-      if (distance < 10) {
+      if (distance < this.distanceToCatch) {
+        console.log("you got it", id);
         // in meters
         this.guardian = new Player(pseudo, lat, lon);
+        this.chaseObject = null;
         this.alreadyGuardian = true;
         result = true;
-        //await this.BeginTimer(1, 100); // Value to change with a real timer
+        this.players[id].score += this.scoreCatch;
+      }
+      else {
+        //console.log("Catch did not happen, too far", "distance is too far: " + distance);
       }
       this.history.addAction(this.gameId, id, "catch", {
         status: result ? "success" : "failure",
@@ -71,6 +104,7 @@ export default class Game extends Schema {
   }
 
   stealChaseObject(id: string) {
+    if (!this.guardian) return;
     const {pseudo, lat, lon} = this.players[id];
     const {pseudo: guardianPseudo} = this.guardian;
     let result = false;
@@ -78,9 +112,10 @@ export default class Game extends Schema {
       this.players[id].getLocation(),
       this.guardian.getLocation()
     );
-    if (distance < 10) {
+    if (distance < this.distanceToSteal) {
       this.guardian = new Player(pseudo, lat, lon);
       result = true;
+      this.players[id].score += this.scoreSteal;
     }
     this.history.addAction(this.gameId, id, "steal", {
       status: result ? "success" : "failure",
@@ -97,8 +132,9 @@ export default class Game extends Schema {
   }
 
   generatePositionForChaseObject() {
-    const {latitude, longitude} = calcRandomPointInTriangle(this.area.getTriangles());
-    return new ChaseObject(latitude, longitude);
+    const triangles = this.area.getTriangles();
+    const {latitude, longitude} = calcRandomPointInTriangle(triangles);
+    return  new ChaseObject(latitude, longitude);
   }
 
   generateAnotherPositionForChaseObject() {
@@ -108,18 +144,24 @@ export default class Game extends Schema {
   }
 
   movePlayer(id: string, payload: any) {
-    const {lat, lon} = this.players[id];
+    const {pseudo, lat, lon} = this.players[id];
     const {lat: newlat, lon: newlon, speed} = payload;
-    this.players[id].lat = newlat;
-    this.players[id].lon = newlon;
-    this.history.addMove(
-      this.gameId,
-      id,
-      [lat, lon],
-      [newlat, newlon],
-      new Date().getTime(),
-      speed
-    );
+    if (lat && lon && newlat && newlon) {
+      const distanceTraveled = distance(lat, lon, newlat, newlon) / 1000
+      this.players[id].lat = newlat;
+      this.players[id].lon = newlon;
+      this.players[id].distance += distanceTraveled
+      this.players[id].score += distanceTraveled / 10;
+      this.history.addMove(
+        this.gameId,
+        id,
+        [lat, lon],
+        [newlat, newlon],
+        new Date().getTime(),
+        speed
+      );
+    }
+   
     if (
       this.alreadyGuardian &&
       this.players[id].pseudo === this.guardian.pseudo

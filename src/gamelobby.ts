@@ -10,7 +10,7 @@ export class PlayerLobby extends Schema {
   pseudo: string
 
   @type("boolean")
-  is_ready = false;
+  is_ready;
 
   @type("string")
   avatarUrl: string;
@@ -20,6 +20,15 @@ export class PlayerLobby extends Schema {
     this.id = id;
     this.pseudo = pseudo;
     this.avatarUrl = avatarUrl;
+    this.is_ready = false;
+  }
+  
+  isReady() {
+    return this.is_ready;
+  }
+
+  setReady(ready: boolean) {
+    this.is_ready = ready;
   }
 
   getId() {

@@ -30,15 +30,18 @@ export default class GameLobby extends Room<GameLobbySchema> {
     client.id = options.playerId;
     this.state.fetchUserInDatabase(client.id).then((user) => 
     {
-      const playerlooby = new PlayerLobby(user.id, user.pseudo, user.avatarUrl);
-      this.state.players[client.id] = playerlooby;
+      this.addPlayerToList(client, user)
       this.state.creator_name = (this.state.players[Object.keys(this.state.players)[0]] as PlayerLobby).pseudo
       this.saveHistory(client);
     }).catch((err) => {
       if (err)
       throw ("Error, your Player is not registered");
     });
-    
+  }
+
+  addPlayerToList(client, user) {
+    const playerlooby = new PlayerLobby(user.id, user.pseudo, user.avatarUrl);
+    this.state.players[client.id] = playerlooby;
   }
 
   saveHistory(client: Client) {
@@ -52,8 +55,10 @@ export default class GameLobby extends Room<GameLobbySchema> {
   onMessage(client: Client, data: any) {
     console.log(`${client.id} sent a message : ${data}`);
     if (data.action === "ready") {
-      this.state.players[client.id].is_ready = !this.state.players[client.id].is_ready;
-      this.state.players[client.id].is_ready ? this.state.counter++ : this.state.counter--;
+      const currentPlayer: PlayerLobby = this.state.players[client.id];
+      console.log('currentPlayer', JSON.stringify(this.state.players))
+      currentPlayer.setReady(!currentPlayer.isReady());
+      currentPlayer.isReady() ? this.state.counter++ : this.state.counter--;
       const numberOfPlayers = Object.keys(this.state.players).length;
       const numberOfPlayersThatAreReady = this.state.counter;      
       const creatorPseudo = this.state.creator_name
