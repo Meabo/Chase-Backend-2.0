@@ -90,12 +90,12 @@ export default class GameLobby extends Room<GameLobbySchema> {
     message.text = `${client.id} left GameLobby.`;
     message.sender = "server";
     this.state.history.push(message);
-    console.log("Message: " + message.toString());
+    //console.log("Message: " + message.toString());
     delete this.state.players[client.id];
   }
 
   // Cleanup callback, called after there are no more clients in the room. (see `autoDispose`)
   onDispose() {
-    console.log("Disposed Room");
+    //console.log("Disposed Room");
   }
 }

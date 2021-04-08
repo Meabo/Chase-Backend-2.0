@@ -9,7 +9,7 @@
       "sourceMap": true,
       "outDir": "dist",
       "baseUrl": ".",
-      "typeRoots" : ["src/types/*.d.ts", "jest", "node_modules"],
+      "types": ["jest", "node"],
       "experimentalDecorators": true
   },
   "include": [

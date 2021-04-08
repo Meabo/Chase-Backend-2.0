@@ -64,7 +64,7 @@ const jwtStrategy = new JwtStrategy(jwtParams, (jwtPayload, done) => {
 });
 
 const androidFacebookStrategy = new CustomStrategy(async (req, done) => {
-  const facebookAccessToken = req.query.accessToken;
+  const facebookAccessToken = req.query.accessToken as string;
   if (!facebookAccessToken) done(new Error("Error with FacebookToken"), null);
   else {
     const response = await verifyFacebookToken(facebookAccessToken);
@@ -93,7 +93,7 @@ const androidFacebookStrategy = new CustomStrategy(async (req, done) => {
   }
 });
 
-passport.serializeUser<any, any>((user, done) => {
+passport.serializeUser((user: any, done) => {
   console.log(user);
   done(undefined, { user: user.profile, accessToken: user.accessToken });
 });

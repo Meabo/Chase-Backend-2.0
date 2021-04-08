@@ -41,10 +41,10 @@ export default class Game extends Schema {
       this.fetchGameFromDb(options.name);
       return;
     }
-    this.initWithOptions(options);
+    this.createGameWithOptions(options);
   }
 
-  initWithOptions(options: any) {
+  createGameWithOptions(options: any) {
     this.area = new Area(options.name, options.arealoc, options.bounds);
     this.chaseObject = new ChaseObject(options.chaseObjectLoc[0], options.chaseObjectLoc[1]);
     this.timer = null;
@@ -91,7 +91,7 @@ export default class Game extends Schema {
         this.players[id].score += this.scoreCatch;
       }
       else {
-        //console.log("Catch did not happen, too far", "distance is too far: " + distance);
+        console.log("Catch did not happen, too far", "distance is too far: " + distance);
       }
       this.history.addAction(this.gameId, id, "catch", {
         status: result ? "success" : "failure",
