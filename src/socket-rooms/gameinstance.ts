@@ -4,7 +4,7 @@ import Game from "../game";
 export default class GameInstance extends Room<Game> {
   // When room is initialized
   onCreate(options: any) {
-    this.setState(new Game({fetch: true, ...options}));
+    this.setState(new Game({...options}));
     const time = 30;
     const delay = 1 * 1000;
     //setTimeout(() => this.beginGame(time), delay);
@@ -28,7 +28,7 @@ export default class GameInstance extends Room<Game> {
   }
   // When client successfully join the room
   onJoin(client: Client, options: any, auth) {
-    console.log(`${client.sessionId} join GameInstance.`);
+    //console.log(`${client.sessionId} join GameInstance.`);
     if (!options || options.pseudo == null || options.lat == null || options.lon == null)
       throw new Error("Player doesn't have a pseudo, or a position");
 

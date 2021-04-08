@@ -11,7 +11,6 @@ export default class ChaseObject extends Schema {
     super();
     this.lat = lat;
     this.lon = lon;
-    //console.log(this.lat, this.lon)
   }
 
   getLocation() {

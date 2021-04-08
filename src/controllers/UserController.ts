@@ -38,10 +38,11 @@ export class UserController {
     //Todo: require pseudo and avatarUrl not null
     console.log('CreatePlayer Pseudo', req.query.pseudo);
     try {
-      const decodedToken = await verifyAccessToken(req.query["accessToken"])
+      const queryToken = req.query["accessToken"] as string;
+      const decodedToken = await verifyAccessToken(queryToken)
       const userId = decodedToken.sub;
       console.log("decodedToken", decodedToken);
-      await createPlayerInDb(userId, req.query.pseudo, req.query.avatar_url);
+      await createPlayerInDb(userId, (req.query.pseudo as string), (req.query.avatar_url as string));
       res.status(200).send({success: true, pseudo: req.query.pseudo, avatar_url: req.query.avatar_url});
     } catch (err) {
           // Todo: Log Error as Kazmon do (need research)

@@ -3,10 +3,10 @@ import { Request, Response } from "express";
 
 export class GameController {
   public async getGamesWithGeolocationFilter(req: Request, res: Response) {
-    const lat = req.query["lat"];
-    const lon = req.query["lon"];
-    const distance = req.query["distance"];
-    const limit = req.query["limit"];
+    const lat = req.query["lat"] as any;
+    const lon = req.query["lon"] as any;
+    const distance = req.query["distance"] as any;
+    const limit = req.query["limit"] as any;
 
     console.log('lat and lon', lat, lon)
 

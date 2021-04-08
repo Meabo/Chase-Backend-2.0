@@ -1,11 +1,14 @@
-import * as firebase from "firebase/app";
 const firebaseConfig = {
   // ...
 };
 
-firebase.initializeApp(firebaseConfig);
+//firebase.initializeApp(firebaseConfig);
 
-const AuthGateway = {
+const firebase = {
+  auth: () => {}
+}
+
+/*const AuthGateway = {
   SignUp: async (email, password) => {
     try {
       const result = await firebase
@@ -36,4 +39,4 @@ const AuthGateway = {
     }
   }
 };
-export default AuthGateway;
+export default AuthGateway;*/
