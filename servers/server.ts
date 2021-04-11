@@ -9,6 +9,8 @@ import cookieParser from "cookie-parser"
 import expressSession from "express-session"
 import {Games} from "../src/models/game"
 import {methods} from "./socketServer"
+import { monitor } from "@colyseus/monitor";
+import basicAuth from "express-basic-auth";
 
 
 class Server {
@@ -26,6 +28,7 @@ class Server {
     this.configApplicationMiddleWare()
     this.configViews()
     this.configPassport()
+    this.configColyseusMonitor();
   }
 
   private configApplicationMiddleWare(): void {
@@ -45,6 +48,20 @@ class Server {
   private configPassport(): void {
     this.app.use(passportMethods.init());
     this.app.use(passportMethods.initSession());
+  }
+
+  private configColyseusMonitor(): void {
+    const basicAuthMiddleware = basicAuth({
+      // list of users and passwords
+      users: {
+          "admin": "admin",
+      },
+      // sends WWW-Authenticate header, which will prompt the user to fill
+      // credentials in
+      challenge: true
+  });
+    this.app.use("/colyseus", monitor());
+
   }
 
   private async createLobbyGameRooms() {

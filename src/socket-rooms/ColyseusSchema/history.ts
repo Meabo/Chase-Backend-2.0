@@ -1,6 +1,6 @@
 import {Schema, type, ArraySchema} from "@colyseus/schema";
-import Action from "../src/actionhistory";
-import Move from "../src/movehistory";
+import Action from "./actionhistory";
+import Move from "./movehistory";
 
 export default class History extends Schema {
   @type([Action])

@@ -1,15 +1,15 @@
 import {Schema, type, ArraySchema, MapSchema} from "@colyseus/schema";
-import History from "./history";
-import Player from "./player";
-import ChaseObject from "./chaseobject";
-import Area from "./area";
+import History from "../ColyseusSchema/history";
+import Player from "../ColyseusSchema/player";
+import ChaseObject from "../ColyseusSchema/chaseobject";
+import Area from "../ColyseusSchema/area";
 import {
   distance,
   distanceByLoc,
   calcRandomPointInTriangle,
   robustPointInPolygon
-} from "./utils/locationutils";
-import {getResultsSolo} from "./resultsSolo";
+} from "../../utils/locationutils";
+import {getResultsSolo} from "../../utils/resultsSolo";
 
 
 enum AvailableAreas {

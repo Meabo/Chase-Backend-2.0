@@ -1,5 +1,5 @@
 import {Schema, type, ArraySchema} from "@colyseus/schema";
-import {Location} from "../src/location";
+import {Location} from "./location";
 
 export default class Action extends Schema {
   @type("string")

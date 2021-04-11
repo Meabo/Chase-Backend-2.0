@@ -1,6 +1,6 @@
 import {Schema, type, ArraySchema} from "@colyseus/schema";
-import {Location} from "../src/location";
-import {robustPointInPolygon, triangulate} from "./utils/locationutils";
+import {Location} from "./location";
+import {robustPointInPolygon, triangulate} from "../../utils/locationutils";
 
 export default class Area {
   location:  number[];

@@ -1,11 +1,11 @@
 import app from "express";
 import {createServer} from "http";
 import {Server} from "colyseus";
-import AreaRoom from "../src/socket-rooms/arearoom";
-import Discovery from "../src/socket-rooms/discoveryroom";
-import GameLobby from "../src/socket-rooms/gamelobby";
-import GameInstance from "../src/socket-rooms/gameinstance";
-import GameInstanceSolo from "../src/socket-rooms/gameinstancesolo";
+import AreaRoom from "../src/socket-rooms/Rooms/arearoom";
+import Discovery from "../src/socket-rooms/Rooms/discoveryroom";
+import GameLobby from "../src/socket-rooms/Rooms/gamelobby";
+import GameInstance from "../src/socket-rooms/Rooms/gameinstance";
+import GameInstanceSolo from "../src/socket-rooms/Rooms/gameinstancesolo";
 
 import {eventBus} from "../src/utils/emitter/emitter";
 

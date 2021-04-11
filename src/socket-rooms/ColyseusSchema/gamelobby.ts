@@ -1,5 +1,5 @@
 import {Schema, type, ArraySchema, MapSchema} from "@colyseus/schema";
-import {Users} from "./models/user"
+import {Users} from "../../models/user"
 import shortid from "shortid"
 
 export class PlayerLobby extends Schema {
@@ -10,7 +10,7 @@ export class PlayerLobby extends Schema {
   pseudo: string
 
   @type("boolean")
-  is_ready;
+  is_ready: boolean;
 
   @type("string")
   avatarUrl: string;

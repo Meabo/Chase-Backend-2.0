@@ -1,7 +1,7 @@
 import AreaRepository from "./adapters/AreaRepository";
 import {distanceByLoc} from "./utils/locationutils";
 import User from "./user";
-import Area from "./area";
+import Area from "./socket-rooms/ColyseusSchema/area";
 
 export default class Discover {
   private areaRepository: AreaRepository;
