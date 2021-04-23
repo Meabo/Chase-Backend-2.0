@@ -44,14 +44,13 @@ const initGameServer = (app) => {
 
 const initDefineRooms = async () => {
   try {
-    const games = mongoose.connection.db.collection("Games");
     const fetchedGames = await Games.find().exec();
     fetchedGames.map((game) => {
       gameServer.define( `lobby-${game.id}`, GameLobby, { name: `lobby-${game.id}`, gameId: game.id });
       console.log(`Created lobby-${game.id}`);
-     /* methods.createGameLobby({ name: `lobby-${game.id}`, gameId: game.id });
-      await methods.createGame({ name: game.id, gameId: game.id });
-      console.log(`lobby-${game.id}`);*/
+     
+      // Define Game rooms here
+      // Define other rooms
     });
   } catch (err) {
     console.error(err);

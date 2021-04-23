@@ -5,6 +5,8 @@ import GameInstance from "../src/socket-rooms/Rooms/gameinstance";
 import GameInstanceSolo from "../src/socket-rooms/Rooms/gameinstancesolo";
 import {eventBus} from "../src/utils/emitter/emitter";
 
+// Note: These methods may be deprecated in the future in favor of a bootstrapping of all rooms at App level
+
 export const methods = {
   getGameServer: () => gm,
   init: (areas) => {
