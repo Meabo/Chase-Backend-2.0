@@ -11,17 +11,14 @@ import io.colyseus.serializer.schema.annotations.SchemaClass;
 import io.colyseus.serializer.schema.annotations.SchemaField;
 
 @SchemaClass
-public class Message extends Schema {
-	@SchemaField("0/string")	
-	public String id = "";
+public class GameSoloOptions extends Schema {
+	@SchemaField("0/ref")	
+	public ChaseObject chaseObjectLocation = new ChaseObject();
 
-	@SchemaField("1/string")	
-	public String text = "";
+	@SchemaField("1/number")	
+	public float time = 0;
 
-	@SchemaField("2/string")	
-	public String sender = "";
-
-	@SchemaField("3/int64")	
-	public long time = 0;
+	@SchemaField("2/array/ref")	
+	public ArraySchema<Location> bounds = new ArraySchema<>(Location.class);
 }
 

@@ -37,7 +37,6 @@ const usersSchema: Schema = new Schema(
 );
 
 export const Users = mongoose.model<IUser>(UsersCollection, usersSchema);
-
 /*usersSchema.pre('save', (next: mongoose.HookNextFunction) => {
   const doc: any = this;
   if (doc.isNew) {
@@ -120,3 +119,12 @@ export const createPlayerInDb = async (id: string, pseudo: string, avatarUrl: st
     throw error; 
   }
 }
+
+export const fetchUserInDatabase = async (userId: string) => {
+  try {
+    return await Users.findById(userId)
+  } catch (err) {
+    throw err;
+  }
+}
+

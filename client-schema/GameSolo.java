@@ -2,7 +2,7 @@
 // THIS FILE HAS BEEN GENERATED AUTOMATICALLY
 // DO NOT CHANGE IT MANUALLY UNLESS YOU KNOW WHAT YOU'RE DOING
 // 
-// GENERATED USING @colyseus/schema 0.5.5
+// GENERATED USING @colyseus/schema 1.0.22
 // 
 
 
@@ -20,8 +20,5 @@ public class GameSolo extends Schema {
 
 	@SchemaField("2/ref")	
 	public ChaseObject chaseObject = new ChaseObject();
-
-	@SchemaField("3/ref")	
-	public Area area = new Area();
 }
 

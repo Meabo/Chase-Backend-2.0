@@ -1,41 +1,48 @@
 import { Room, Client } from "colyseus";
-import { eventBus } from "../../utils/emitter/emitter";
-import { PlayerLobby, Message, GameLobbySchema } from "../ColyseusSchema/gamelobby";
 import { methods } from "../../../servers/socketServer";
-import Player from "src/socket-rooms/ColyseusSchema/player";
+import http from "http";
+import { IUser, fetchUserInDatabase, Users } from "../../models/user";
+import { GameLobbySchema } from "../ColyseusSchema/GameLobbySchema";
+import { PlayerLobby } from "../ColyseusSchema/PlayerLobby";
+import { Message } from "../ColyseusSchema/Message";
+import shortid from "shortid";
 
-export default class GameLobby extends Room<GameLobbySchema> {
+export class GameLobby extends Room<GameLobbySchema> {
   // When room is initialized
 
   onCreate(options: any) {
-    console.log("RoomLobby created", options);
-    this.setState(new GameLobbySchema(options));
+    const state = new GameLobbySchema();
+    this.setState(state);
+    this.setSeatReservationTime(50);
 
     this.onMessage("*", (client, message) => {
       console.log(`${client.id} sent a message : ${message}`);
     });
-    this.onMessage("ready", (client, request) => {
-      const currentPlayer: PlayerLobby = this.state.players[client.id];
-      console.log("currentPlayer", JSON.stringify(this.state.players));
-      currentPlayer.setReady(!currentPlayer.isReady());
-      currentPlayer.isReady() ? this.state.counter++ : this.state.counter--;
-      const numberOfPlayers = Object.keys(this.state.players).length;
-      const numberOfPlayersThatAreReady = this.state.counter;
-      const creatorPseudo = this.state.creator_name;
-      const creatorPlayer: PlayerLobby = Object.values(this.state.players).find(
-        (player: PlayerLobby) => player.pseudo == creatorPseudo
-      );
-      const creatorClient: Client = this.clients.find(
-        (client: Client) => client.id === creatorPlayer.id
-      );
-      const action =
-        numberOfPlayers - 1 === numberOfPlayersThatAreReady
-          ? "everyone_ready"
-          : "everyone_not_ready";
+
+    this.onMessage("ready", (client) => {
       try {
-        if (creatorClient) this.send(creatorClient, action, null);
+        const currentPlayer: PlayerLobby = this.state.players.get(client.id);
+        currentPlayer.is_ready = !currentPlayer.is_ready;
+        currentPlayer.is_ready ? this.state.counter++ : this.state.counter--;
+        const numberOfPlayers = this.state.players.size;
+        const numberOfPlayersThatAreReady = this.state.counter;
+        const creatorPseudo = this.state.creator_name;
+        const creatorPlayer: PlayerLobby = Array.from(
+          this.state.players.values()
+        ).find((player: PlayerLobby) => player.pseudo == creatorPseudo);
+        const creatorClient: Client = this.clients.find(
+          (client: Client) => client.id === creatorPlayer.id
+        );
+        const action =
+          numberOfPlayers - 1 === numberOfPlayersThatAreReady
+            ? "everyone_ready"
+            : "everyone_not_ready";
+        if (creatorClient) {
+          creatorClient.send(action);
+          console.log("sent to Room Creator", action);
+        }
       } catch (err) {
-        throw err;
+        console.error(err);
       }
     });
 
@@ -44,49 +51,27 @@ export default class GameLobby extends Room<GameLobbySchema> {
     });
 
     this.onMessage("start", (client, message) => {
-      methods
-        .createGame({ name: this.state.getGameId() })
+      /*methods
+        .createGame({ name: this.state.gameId })
         .then((id) => {
-          this.broadcast("gameRoom", this.state.getGameId());
+          this.broadcast("gameRoom", this.state.gameId);
         })
         .catch((err) => {
           this.broadcast("gameRoom", null);
-        });
+        });*/
     });
   }
 
-  // Checks if a new client is allowed to join. (default: `return true`)
-  requestJoin(options: any, isNew: boolean) {
-    return true;
-  }
-
-  everyoneIsReady(clients, playersReady): boolean {
-    return clients.length === playersReady.length;
-  }
-  // Authorize client based on provided options before WebSocket handshake is complete
-  /*onAuth(options) {
-   */
-
-  // When client successfully join the room
-  onJoin(client: Client, options: any, auth) {
-    client.id = options.playerId;
-    this.state
-      .fetchUserInDatabase(client.id)
-      .then((user) => {
-        this.addPlayerToList(client, user);
-        this.state.creator_name = (this.state.players[
-          Object.keys(this.state.players)[0]
-        ] as PlayerLobby).pseudo;
-        this.saveHistory(client);
-      })
-      .catch((err) => {
-        if (err) throw "Error, your Player is not registered";
-      });
-  }
-
-  addPlayerToList(client, user) {
-    const playerlooby = new PlayerLobby(user.id, user.pseudo, user.avatarUrl);
-    this.state.players[client.id] = playerlooby;
+  addPlayerToList(client: Client, user: IUser) {
+    const playerlobby = new PlayerLobby();
+    playerlobby.id = user.id;
+    playerlobby.pseudo = user.pseudo;
+    playerlobby.avatarUrl = user.avatarUrl;
+    this.state.players.set(client.id, playerlobby);
+    if (this.state.players.size === 1) {
+      this.state.creator_name = playerlobby.pseudo;
+    }
+    return playerlobby;
   }
 
   saveHistory(client: Client) {
@@ -96,21 +81,66 @@ export default class GameLobby extends Room<GameLobbySchema> {
     this.state.history.push(message);
   }
 
-  // When a client sends a message
-  /*onMessage(client: Client, data: any) {}*/
+  onJoinForTesting(client: Client, options: any) {
+    client.id = options.playerId;
+    this.addPlayerToList(
+      client,
+      new Users({
+        id: options.playerId,
+        pseudo: options.pseudo,
+        avatarUrl: options.avatarUrl,
+      })
+    );
+    this.saveHistory(client);
+  }
 
-  // When a client leaves the room
+  // When client successfully join the room
+  async onJoin(client: Client, options: any, auth: any) {
+    if (options && options.test) this.onJoinForTesting(client, options);
+    else {
+      if (!options || !options.playerId)
+        throw "Error, no id has been registered";
+      try {
+        client.id = options.playerId;
+        const playerFetchedFromDb = await fetchUserInDatabase(client.id);
+        const playerInLobby: PlayerLobby = this.addPlayerToList(
+          client,
+          playerFetchedFromDb
+        );
+        this.saveHistory(client);
+        console.log("onJoined", playerInLobby.pseudo);
+      } catch (err) {
+        console.log("error during onJoin", err);
+        throw err;
+      }
+    }
+  }
+  everyoneIsReady(clients, playersReady): boolean {
+    return clients.length === playersReady.length;
+  }
+
+  onAuth(client: Client, options: any, request: http.IncomingMessage) {
+    return true;
+  }
+
   onLeave(client: Client, consented: boolean) {
     const message = new Message();
     message.text = `${client.id} left GameLobby.`;
     message.sender = "server";
     this.state.history.push(message);
-    //console.log("Message: " + message.toString());
-    delete this.state.players[client.id];
+    const playerToDelete = this.state.players.get(client.id);
+    if (playerToDelete) {
+      this.state.players.delete(client.id);
+      if (playerToDelete.pseudo === this.state.creator_name) {
+        const newCreatorPlayer = this.state.players.values().next()
+          .value as PlayerLobby;
+        this.state.creator_name = newCreatorPlayer.pseudo;
+      }
+    }
+    console.log("onLeave(" + client.id + ")", consented);
   }
 
-  // Cleanup callback, called after there are no more clients in the room. (see `autoDispose`)
   onDispose() {
-    //console.log("Disposed Room");
+    console.log("Disposed Room");
   }
 }
