@@ -1,29 +1,30 @@
 import {Room, Client} from "colyseus";
+import {eventBus} from "../../utils/emitter/emitter";
 import {Schema, type, ArraySchema} from "@colyseus/schema";
-import Area from "../area";
-import History from "../history";
+import Area from "../ColyseusSchema/area";
+import History from "../ColyseusSchema/history";
 
 class State extends Schema {
   @type([History])
   history = new ArraySchema<History>();
 
-  areas = new ArraySchema<Area>();
+  @type(Area)
+  area: Area;
 
-  constructor(areas: Area[]) {
+  constructor(area: Area) {
     super();
-    this.areas.push(...areas);
+    this.area = area;
   }
 }
 
-export default class Discovery extends Room<State> {
+export default class AreaRoom extends Room<State> {
   // When room is initialized
-  onCreate (options: any) {
-    this.setState(new State(options.areas));
+  onCreate(options: any) {
+    //let socketServerInstance = new SocketServer().getInstance();
+    //console.log(this);
+    this.setState(new State(options.area));
   }
 
-  async onAuth(options: any) {
-    return {success: true};
-  }
   // Checks if a new client is allowed to join. (default: `return true`)
   requestJoin(options: any, isNew: boolean) {
     return true;
@@ -34,7 +35,7 @@ export default class Discovery extends Room<State> {
 
   // When client successfully join the room
   onJoin(client: Client, options: any, auth) {
-    //console.log(`${client.sessionId} join Discovery.`);
+    //console.log(`${client.sessionId} join Area.`);
     this.state.history.push(
       new History("join", client.sessionId, new Date().getTime())
     );
@@ -44,10 +45,11 @@ export default class Discovery extends Room<State> {
   onMessage(client: Client, data: any) {
     const {action, roomName} = data;
     switch (action) {
-      case "getAreas":
-        this.send(client, this.state.areas);
+      case "getArea":
+        this.send(client, this.state.area);
         break;
-      case "leaveDiscovery":
+      case "joingameroom":
+        eventBus.sendEvent("createGameLobby", data);
         this.onLeave(client, true);
         break;
     }

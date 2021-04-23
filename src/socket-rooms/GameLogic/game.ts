@@ -1,16 +1,16 @@
 import {Schema, type, ArraySchema, MapSchema} from "@colyseus/schema";
-import History from "./history";
-import Player from "./player";
-import ChaseObject from "./chaseobject";
-import {getGameById, IGame} from "./models/game"
+import History from "../ColyseusSchema/history";
+import Player from "../ColyseusSchema/player";
+import ChaseObject from "../ColyseusSchema/chaseobject";
+import {getGameById, IGame} from "../../models/game"
 import {timer} from "rxjs";
-import Area from "./area";
+import Area from "../ColyseusSchema/area";
 import {
   distance,
   distanceByLoc,
   calcRandomPointInTriangle,
   robustPointInPolygon
-} from "./utils/locationutils";
+} from "../../utils/locationutils";
 
 export default class Game extends Schema {
   @type(History)

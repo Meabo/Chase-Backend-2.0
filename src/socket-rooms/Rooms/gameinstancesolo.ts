@@ -1,6 +1,9 @@
-import {Room, Client} from "colyseus";
-import GameSolo from "../gameSolo";
+import { Room, Client } from "colyseus";
+import GameSolo from "../GameLogic/gameSolo";
 import { transcode } from "buffer";
+import GameSoloOptions from "../ColyseusSchema/gameSoloOptions";
+import {Location} from "../ColyseusSchema/Location";
+import SchemaConverter from "../../utils/colyseusUtils";
 
 export default class GameInstanceSolo extends Room<GameSolo> {
   // When room is initialized$
@@ -13,6 +16,19 @@ export default class GameInstanceSolo extends Room<GameSolo> {
     this.options = options;
     if (!this.gameSolo) this.gameSolo = new GameSolo(this.options);
     this.setState(this.gameSolo);
+
+    this.onMessage("start", (client, payload) => {
+      console.log(payload);
+      this.beginGame(payload);
+    });
+
+    this.onMessage("move", (client, payload) => {
+      this.gameStarted && this.state.movePlayer(client.sessionId, payload);
+    });
+
+    this.onMessage("catch", (client, attributeUpdateMessage) => {
+      this.state.catchChaseObject(client.sessionId);
+    });
   }
   // Checks if a new client is allowed to join. (default: `return true`)
   requestJoin(options: any, isNew: boolean) {
@@ -28,7 +44,7 @@ export default class GameInstanceSolo extends Room<GameSolo> {
     console.log(`${client.sessionId} join GameInstanceSolo.`);
 
     const res = new Promise((resolve, reject) => {
-      const {pseudo, lat, lon} = options;
+      const { pseudo, lat, lon } = options;
       this.state.createPlayer(client.sessionId, pseudo, lat, lon);
       resolve(true);
     });
@@ -38,11 +54,13 @@ export default class GameInstanceSolo extends Room<GameSolo> {
   beginGame(time: number) {
     console.log("GameBegins");
     this.gameStarted = true;
-    this.broadcast({message: "startGame"});
-    this.broadcast({
-      message: "chaseObject",
-      value: {chaseObject: this.gameSolo.getChaseObjectLocation(), time: time, bounds: this.gameSolo.getCurrentBounds(), triangles: this.gameSolo.getAreaTriangles()}
-    });
+    this.broadcast("startGame");
+    const gameSoloOptions = new GameSoloOptions()
+    gameSoloOptions.chaseObjectLocation =  new Location(this.gameSolo.getChaseObjectLocation()[0], this.gameSolo.getChaseObjectLocation()[1])
+    gameSoloOptions.time = time;
+    gameSoloOptions.bounds = SchemaConverter.ArrayToLocation(this.gameSolo.getCurrentBounds());
+
+    this.broadcast("chaseObject", gameSoloOptions);
     console.log("ChaseObject Broadcasted", time);
     this.clock.setTimeout(() => this.finishedGame(), time * 1000);
   }
@@ -50,13 +68,13 @@ export default class GameInstanceSolo extends Room<GameSolo> {
   finishedGame() {
     console.log("GameFinished");
     const results = this.state.getResult();
-    this.broadcast({message: "results", value: results});
-   // this.broadcast({message: "gameFinished"});
+    this.broadcast("results", results);
+    // this.broadcast({message: "gameFinished"});
     this.disconnect();
   }
   // When a client sends a message
-  onMessage(client: Client, data: any) {
-    const {action, payload} = data;
+  /* onMessage(client: Client, data: any) {
+    const { action, payload } = data;
     console.log("received action", action);
     switch (action) {
       case "start":
@@ -70,7 +88,7 @@ export default class GameInstanceSolo extends Room<GameSolo> {
         this.state.catchChaseObject(client.sessionId);
         break;
     }
-  }
+  }*/
 
   // When a client leaves the room
   onLeave(client: Client, consented: boolean) {

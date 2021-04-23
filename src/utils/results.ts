@@ -1,8 +1,8 @@
-import {distanceByLoc} from "./utils/locationutils";
-import History from "./history";
-import Move from "./movehistory";
-import Action from "./actionhistory";
-import Player from "./player";
+import {distanceByLoc} from "./locationutils";
+import History from "../socket-rooms/ColyseusSchema/history";
+import Move from "../socket-rooms/ColyseusSchema/movehistory";
+import Action from "../socket-rooms/ColyseusSchema/actionhistory";
+import Player from "../socket-rooms/ColyseusSchema/player";
 
 export function getResults(history: History) {
   const totalDistance = history

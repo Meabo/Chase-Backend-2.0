@@ -23,9 +23,9 @@ export class Routes {
   }
   
   public routes(app: express.Application): void {
-    app.get('/', (req, res) => {
+    /*app.get('/', (req, res) => {
       res.render("home", { user: req.user });
-    });
+    });*/
 
     this.generateWebAuthenticationRoutes(app);
     this.generateGameRoutes(app);
