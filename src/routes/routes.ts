@@ -32,6 +32,7 @@ export class Routes {
     this.generateAndroidAuthenticationRoutes(app);
     this.generateOnboardingRoutes(app);
     this.generateAvatarRoutes(app);
+    this.generatePlayersRoutes(app);
   }
 
   private initConfig() {
@@ -110,5 +111,19 @@ export class Routes {
         res.status(400).send(`Invalid AccessToken: ${err} / Please try to connect again`);
       }
     }, this.avatarController.getAvatars)
+  }
+
+  private generatePlayersRoutes(app: express.Application) {
+    app.route("/users/:pseudo")
+    .get(async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        console.log('req received', req.params)
+        !this.devMode && await verifyAccessToken(req.get('authorization'));
+        next();
+      }
+      catch (err) {
+        res.status(400).send(`Invalid AccessToken: ${err} / Please try to connect again`);
+      }
+    }, this.userController.findAvatarFromPseudo)
   }
 }

@@ -4,26 +4,20 @@ export default class Player extends Schema {
   @type("string")
   pseudo: string;
 
-  @type("number")
+  @type("float64")
   lat: number;
 
-  @type("number")
+  @type("float64")
   lon: number;
   
-  @type("number")
+  @type("uint32")
   score: number = 0;
 
-  @type("number")
-  distance: number = 0;
+  @type("float32")
+  distance: number = 0.0;
 
-  playerId: string = "";
-
-  constructor(pseudo_: string, lat: number, lon: number) {
-    super();
-    this.pseudo = pseudo_;
-    this.lat = lat;
-    this.lon = lon;
-  }
+  @type("string")
+  playerId: string;
 
   getPseudo() {
     return this.pseudo;

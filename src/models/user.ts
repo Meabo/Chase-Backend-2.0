@@ -74,9 +74,7 @@ export const findUserById = async (id: any) => {
 export const findUserBy = async (parameter: any, value: any) => {
   try {
     const user = await Users.findOne({
-      where: {
         [parameter]: value
-      }
     }).exec();
     return user;
   } catch (error) {

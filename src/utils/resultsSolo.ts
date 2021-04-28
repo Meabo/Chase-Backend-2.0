@@ -1,7 +1,7 @@
 import {distanceByLoc} from "./locationutils";
-import History from "../socket-rooms/ColyseusSchema/history";
-import Move from "../socket-rooms/ColyseusSchema/movehistory";
-import Action from "../socket-rooms/ColyseusSchema/actionhistory";
+import History from "../socket-rooms/ColyseusSchema/History";
+import Move from "../socket-rooms/ColyseusSchema/MoveHistory";
+import Action from "../socket-rooms/ColyseusSchema/ActionHistory";
 
 export const getResultsSolo = (history: History, pointUnity: number) => {
   const moves = history.getHistoryMoves();

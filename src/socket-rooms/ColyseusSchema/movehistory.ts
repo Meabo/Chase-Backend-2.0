@@ -1,19 +1,23 @@
 import {Schema, type, ArraySchema} from "@colyseus/schema";
-import {Location} from "./location";
+import {Location} from "./Location";
 
 export default class Move extends Schema {
   @type("string")
   private gameId: string;
+  
   @type("string")
   private playerId: string;
+  
   @type(Location)
   private prevlocation: Location;
+
   @type(Location)
   private newlocation: Location;
-  @type("number")
+  
+  @type("float32")
   private timestamp: number;
 
-  @type("number")
+  @type("float32")
   private speed: number;
 
   constructor(

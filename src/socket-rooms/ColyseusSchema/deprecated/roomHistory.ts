@@ -1,6 +1,6 @@
 import {Schema, type, ArraySchema} from "@colyseus/schema";
-import Action from "./actionhistory";
-import Move from "./movehistory";
+import Action from "../ActionHistory";
+import Move from "../MoveHistory";
 
 export default class RoomHistory extends Schema {
   @type(["string"])
