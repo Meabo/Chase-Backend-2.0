@@ -14,6 +14,10 @@ export function onJoin(this: Room) {
     this.onMessage("*", (type, message) => {
         console.log("onMessage:", type, message);
     });
+
+    this.onMessage("ready", (message) => {
+        this.send("ready");
+    });
 }
 
 export function onLeave(this: Room) {

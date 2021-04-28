@@ -1,14 +1,8 @@
 import {Schema, type} from "@colyseus/schema";
 
 export class Location extends Schema {
-  @type("number") lat: number;
-  @type("number") lon: number;
-
-  constructor(lat: number, lon: number) {
-    super();
-    this.lat = lat;
-    this.lon = lon;
-  }
+  @type("float64") lat: number;
+  @type("float64") lon: number;
 
   getLocation() {
     return [this.lat, this.lon];

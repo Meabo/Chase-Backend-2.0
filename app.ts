@@ -1,7 +1,8 @@
 import { createServer } from "http";
 import express from "express";
 import { Server } from "colyseus";
-import { GameLobby } from "./src/socket-rooms/Rooms/gamelobby";
+import { GameLobbyRoom } from "./src/socket-rooms/Rooms/GameLobbyRoom";
+import { GameInstance } from "./src/socket-rooms/Rooms/GameInstanceRoom";
 import { Routes } from "./src/routes/routes";
 import mongoose from "mongoose";
 import { passportMethods } from "./src/authentication/passportStrategies";
@@ -13,18 +14,24 @@ import { monitor } from "@colyseus/monitor";
 import basicAuth from "express-basic-auth";
 import cors from "cors";
 import { Games } from "./src/models/game";
-import { methods } from "./servers/socketServer";
+//import { methods } from "./servers/socketServer";
 
-let gameServer;
+let gameServer: Server;
 const PORT = 3000;
 const SOCKET_PORT = 2567;
 
 const initExpress = (app) => {
   app.use(express.json());
   app.use(cors());
+  /* app.use(morgan("dev", {
+    skip: function (req, res) {
+      return req.url === "/colyseus"
+    },
+    stream: process.stderr
+}));*/
   app.use(morgan("dev"));
   app.use(cookieParser());
-  //app.use(express.urlencoded()); //Parse URL-encoded bodies
+  // app.use(express.urlencoded({extended: true})); //Parse URL-encoded bodies
   app.use(express.static("public"));
 
   app.use(
@@ -42,16 +49,41 @@ const initGameServer = (app) => {
   });
 };
 
-const initDefineRooms = async () => {
+const initDefineRooms = async function () {
   try {
     const fetchedGames = await Games.find().exec();
-    fetchedGames.map((game) => {
-      gameServer.define( `lobby-${game.id}`, GameLobby, { name: `lobby-${game.id}`, gameId: game.id });
-      console.log(`Created lobby-${game.id}`);
+    /*const gameLobbyHandler = gameServer
+      .define(`gamelobby`, GameLobbyRoom, {
+        name: `lobby-5ed6a5df31c7d81f5792fb83`,
+        gameId: "5ed6a5df31c7d81f5792fb83",
+      })
+      .enableRealtimeListing();*/
+
+    const gameHandler = gameServer
+      .define(`game`, GameInstance, { gameId: "5ed6a5df31c7d81f5792fb83" })
+      .enableRealtimeListing();
+
+    /*fetchedGames.map((game) => {
+      //const gameLobbyHandler = gameServer.define( `lobby-${game.id}`, GameLobbyRoom, { name: `lobby-${game.id}`, gameId: game.id });
+      //console.log(`Created lobby-${game.id}`);
+      const gameHandler = gameServer.define(game.id, GameInstance, { gameId: game.id });
+      console.log(`Created Game ${game.id}`);
+
      
       // Define Game rooms here
       // Define other rooms
     });
+    fetchedGames.map((game) => {
+      const gameLobbyHandler = gameServer.define( `lobby-${game.id}`, GameLobbyRoom, { name: `lobby-${game.id}`, gameId: game.id });
+      console.log(`Created lobby-${game.id}`);
+      //const gameHandler = gameServer.define(game.id, GameInstance, { gameId: game.id });
+      //console.log(`Created Game ${game.id}`);
+
+     
+      // Define Game rooms here
+      // Define other rooms
+    });*/
+    console.log("finished define");
   } catch (err) {
     console.error(err);
   }
@@ -128,11 +160,11 @@ const initServer = async () => {
   initViews(app);
   configPassport(app);
   initColyseusMonitor(app);
+
   initRoutes(app);
   listenServers(app);
 };
 
 initServer();
-
 
 export const gm = gameServer;

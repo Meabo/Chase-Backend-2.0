@@ -26,6 +26,19 @@ export class UserController {
       .catch((error) => error);
   }
 
+  public async findAvatarFromPseudo(req: Request, res: Response) {
+    try {
+      const parameter = "pseudo"
+      const queryToken = req.params[parameter] as string;
+
+      const user = await findUserBy(parameter, queryToken)
+      res.status(200).send(user)
+    } catch (err) {
+      throw err;
+    }
+  }
+
+
   public async createUserFacebook(id: string, facebookAccessToken: string) {
     const fields = "id,first_name,last_name,email,age_range,gender,birthday,name_format"
     const graphUrl = `https://graph.facebook.com/v6.0/me?fields=${fields}&access_token=${facebookAccessToken}`

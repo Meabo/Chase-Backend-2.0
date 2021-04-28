@@ -1,8 +1,8 @@
 import {Room, Client} from "colyseus";
 import {eventBus} from "../../utils/emitter/emitter";
 import {Schema, type, ArraySchema} from "@colyseus/schema";
-import Area from "../ColyseusSchema/area";
-import History from "../ColyseusSchema/history";
+import Area from "../ColyseusSchema/Area";
+import History from "../ColyseusSchema/History";
 
 class State extends Schema {
   @type([History])

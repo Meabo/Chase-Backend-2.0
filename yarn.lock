@@ -295,6 +295,13 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
+"@colyseus/command@^0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@colyseus/command/-/command-0.1.6.tgz#6a6f9c6912976ec21994e189477910e2fcb8e14a"
+  integrity sha512-RK8JDBDCpKKLcseTaVvHKdMfaLtiVLPWIWUim8LqhfQWl1rxDMnEPyVOePCxUu+FsfxzSYkT49RwgFICiW+Qlw==
+  dependencies:
+    debug "^4.1.1"
+
 "@colyseus/loadtest@^0.14.3":
   version "0.14.3"
   resolved "https://registry.yarnpkg.com/@colyseus/loadtest/-/loadtest-0.14.3.tgz#772f81cccc2e0c47dad14e00cad2aa58b085b727"

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
+    "@colyseus/command": "^0.1.6",
     "@colyseus/loadtest": "^0.14.3",
     "@colyseus/monitor": "^0.14.3",
     "@types/connect-ensure-login": "^0.1.5",
@@ -56,16 +57,17 @@
   },
   "scripts": {
     "start": "ts-node -r dotenv/config ./app.ts",
+    "debug": "nodemon --inspect",
     "build": "npm run build-sass && npm run build-ts && npm run lint && npm run copy-static-assets",
     "build-ts": "tsc",
     "dev": "nodemon -r dotenv/config",
     "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
     "prod": "npm run build && npm run start",
-    "debug": "npm run build && npm run watch-debug",
     "test": "jest",
     "test:watch": "jest --watchAll --verbose --detectOpenHandles",
     "test-mocha": "mocha -r ts-node/register __tests__/*",
-    "generate": "npx schema-codegen src/game.ts --java --output client-schema/"
+    "generate": "npx schema-codegen src/game.ts --java --output client-schema/",
+    "bot:roomlobby": "npx colyseus-loadtest client/roomlobby-bot.ts --room lobby-5ed6a5df31c7d81f5792fb83 --numClients 5"
   },
   "author": "",
   "license": "ISC"

@@ -1,7 +1,7 @@
 import { Room, Client } from "colyseus";
-import GameSolo from "../GameLogic/gameSolo";
+import GameSolo from "../GameLogic/GameSolo";
 import { transcode } from "buffer";
-import GameSoloOptions from "../ColyseusSchema/gameSoloOptions";
+import GameSoloOptions from "../ColyseusSchema/GameSoloOptions";
 import {Location} from "../ColyseusSchema/Location";
 import SchemaConverter from "../../utils/colyseusUtils";
 

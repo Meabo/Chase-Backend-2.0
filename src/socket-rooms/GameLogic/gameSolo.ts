@@ -1,8 +1,8 @@
 import {Schema, type, ArraySchema, MapSchema} from "@colyseus/schema";
-import History from "../ColyseusSchema/history";
-import Player from "../ColyseusSchema/player";
-import ChaseObject from "../ColyseusSchema/chaseobject";
-import Area from "../ColyseusSchema/area";
+import History from "../ColyseusSchema/History";
+import Player from "../ColyseusSchema/PlayerGame";
+import ChaseObject from "../ColyseusSchema/ChaseObject";
+import Area from "../ColyseusSchema/Area";
 import {
   distance,
   distanceByLoc,
@@ -10,6 +10,7 @@ import {
   robustPointInPolygon
 } from "../../utils/locationutils";
 import {getResultsSolo} from "../../utils/resultsSolo";
+import SchemaConverter from "../../utils/colyseusUtils"
 
 
 enum AvailableAreas {
@@ -109,7 +110,7 @@ export default class GameSolo extends Schema {
     let latitude, longitude;
     while (true) {
       let result = calcRandomPointInTriangle(this.area.getTriangles());
-      if (robustPointInPolygon(this.area.getBounds(), [result.latitude, result.longitude]) === -1) {
+      if (robustPointInPolygon(SchemaConverter.LocationToDoubleArray(this.area.getBounds()), [result.latitude, result.longitude]) === -1) {
         latitude = result.latitude;
         longitude = result.longitude
         break;

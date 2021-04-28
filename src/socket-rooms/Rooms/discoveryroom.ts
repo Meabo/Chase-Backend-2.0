@@ -1,7 +1,7 @@
 import { Room, Client } from "colyseus";
 import { Schema, type, ArraySchema } from "@colyseus/schema";
-import Area from "../ColyseusSchema/area";
-import History from "../ColyseusSchema/history";
+import Area from "../ColyseusSchema/Area";
+import History from "../ColyseusSchema/History";
 
 class State extends Schema {
   @type([History])
@@ -10,10 +10,6 @@ class State extends Schema {
   //@type([Area])
   areas = new ArraySchema<Area>();
 
- /* constructor(areas: Area[]) {
-    super();
-    this.areas.push(...areas);
-  }*/
 }
 
 export default class Discovery extends Room<State> {

@@ -1,6 +1,6 @@
 import {Schema, type, ArraySchema} from "@colyseus/schema";
-import ChaseObject from "./chaseobject";
-import {Location} from "./location";
+import ChaseObject from "./ChaseObject";
+import {Location} from "./Location";
 
 export default class GameSoloOptions extends Schema {
     @type(ChaseObject)

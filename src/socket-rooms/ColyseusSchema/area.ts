@@ -1,22 +1,27 @@
 import {Schema, type, ArraySchema} from "@colyseus/schema";
-import {Location} from "./location";
+import {Location} from "./Location";
 import {robustPointInPolygon, triangulate} from "../../utils/locationutils";
+import SchemaConverter from "../../utils/colyseusUtils"
 
-export default class Area {
-  location:  number[];
+export default class Area extends Schema {
+  @type(Location)
+  location: Location = new Location();
 
-  bounds: number[][]
+  @type([Location])
+  bounds = new ArraySchema<Location>();
 
+  @type("string")
   name: string;
 
-  constructor(name: string, location: number[], bounds: number[][]) {
-    this.location = location;
-    this.bounds = bounds;
-    this.name = name;
+  boundsArray: number[][]
+
+  initBoundsArray() {
+    this.boundsArray = SchemaConverter.LocationToDoubleArray(this.getBounds())
+    console.log('this.boundArray', this.boundsArray)
   }
 
   isInside(loc: number[]): boolean {
-    const result = robustPointInPolygon(this.getBounds(), loc);
+    const result = robustPointInPolygon(this.boundsArray, loc);
     if (result === -1 || result === 0) return true;
     return false;
   }
@@ -34,6 +39,6 @@ export default class Area {
   }
 
   getTriangles() {
-    return triangulate(this.getBounds());
+    return triangulate(this.boundsArray);
   }
 }
