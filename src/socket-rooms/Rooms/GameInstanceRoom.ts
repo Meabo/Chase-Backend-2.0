@@ -1,6 +1,6 @@
 import { Room, Client, Delayed  } from "colyseus";
 //import Game from "../GameLogic/Game";
-import {GameSchema} from "../GameLogic/GameSchema"
+import {GameSchema} from "../ColyseusSchema/GameSchema"
 import {UserLocation} from "../ColyseusSchema/Userlocation"
 import {InitGameCommand, CreatePlayerCommand, RemovePlayerCommand, CatchChaseObjectCommand, StealChaseObjectCommand, MoveCommand} from "../Commands/GameCommands"
 import { Dispatcher } from "@colyseus/command";

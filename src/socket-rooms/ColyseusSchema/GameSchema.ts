@@ -1,8 +1,8 @@
 import { Schema, type, MapSchema } from "@colyseus/schema";
-import History from "../ColyseusSchema/History";
-import Player from "../ColyseusSchema/PlayerGame";
-import ChaseObject from "../ColyseusSchema/ChaseObject";
-import Area from "../ColyseusSchema/Area";
+import History from "./History";
+import Player from "./PlayerGame";
+import ChaseObject from "./ChaseObject";
+import Area from "./Area";
 
 export class GameSchema extends Schema {
   @type("string")

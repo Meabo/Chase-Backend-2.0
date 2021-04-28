@@ -1,4 +1,4 @@
-import {GameSchema} from "../GameLogic/GameSchema"
+import {GameSchema} from "../ColyseusSchema/GameSchema"
 import Player from "../ColyseusSchema/PlayerGame";
 import {Location} from "../ColyseusSchema/Location";
 import ChaseObject from "../ColyseusSchema/ChaseObject";

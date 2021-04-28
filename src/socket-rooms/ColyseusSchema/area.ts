@@ -15,12 +15,6 @@ export default class Area extends Schema {
 
   boundsArray: number[][]
 
- /* constructor(name: string, location: Location, bounds: Location[]) {
-    this.location = location;
-    this.bounds = new ArraySchema<Location>(...bounds);
-    this.name = name;
-  }*/
-
   initBoundsArray() {
     this.boundsArray = SchemaConverter.LocationToDoubleArray(this.getBounds())
     console.log('this.boundArray', this.boundsArray)

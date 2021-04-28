@@ -29,7 +29,7 @@ const initExpress = (app) => {
     },
     stream: process.stderr
 }));*/
-  //app.use(morgan("dev", { skip: function(req, res) { req.url === "/colyseus"}}));
+  app.use(morgan("dev"));
   app.use(cookieParser());
   // app.use(express.urlencoded({extended: true})); //Parse URL-encoded bodies
   app.use(express.static("public"));
@@ -157,7 +157,6 @@ const initServer = async () => {
   initGameServer(app);
   await setupMongoDb();
   await initDefineRooms();
-  console.log("after define");
   initViews(app);
   configPassport(app);
   initColyseusMonitor(app);
