@@ -63,7 +63,7 @@
     "dev": "nodemon -r dotenv/config",
     "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
     "prod": "npm run build && npm run start",
-    "test": "jest",
+    "test": "jest --silent",
     "test:watch": "jest --watchAll --verbose --detectOpenHandles",
     "test-mocha": "mocha -r ts-node/register __tests__/*",
     "generate": "npx schema-codegen src/game.ts --java --output client-schema/",

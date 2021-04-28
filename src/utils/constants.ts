@@ -3,7 +3,8 @@ export class Constants {
     static Failure: string = "FAILURE"
     static Actions = {
         Catch: "CATCH",
-        Steal: "STEAL"
+        Steal: "STEAL",
+        Skill: "SKILL"
     }
     
 }

@@ -7,17 +7,17 @@ class State extends Schema {
   @type([History])
   history = new ArraySchema<History>();
 
-  //@type([Area])
+  @type([Area])
   areas = new ArraySchema<Area>();
 
 }
 
-export default class Discovery extends Room<State> {
+export class DiscoveryRoom extends Room<State> {
   // When room is initialized
-  async onCreate(options: any) {
+  onCreate(options: any) {
     this.setState(new State());
     this.onMessage("getAreas", (client, message) => {
-      //this.send(client, this.state.areas);
+      client.send("areas", this.state.areas);
     });
 
     this.onMessage("leaveDiscovery", (client) => {

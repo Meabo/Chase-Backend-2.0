@@ -1,7 +1,7 @@
 import AreaRepository from "./adapters/AreaRepository";
 import {distanceByLoc} from "./utils/locationutils";
 import User from "./user";
-import Area from "./socket-rooms/ColyseusSchema/Area";
+import Area from "./socket-rooms/ColyseusSchema/area";
 
 export default class Discover {
   private areaRepository: AreaRepository;
@@ -24,8 +24,9 @@ export default class Discover {
       .getAll()
       .filter(
         (area: Area) =>
-          distanceByLoc(user.getLocation(), area.getLocation()) <= limit
+          distanceByLoc(user.getLocation(), [area.location.lat, area.location.lon]) <= limit
       );
+      console.log('filtered games', filtered_games)
     return filtered_games;
   }
 }

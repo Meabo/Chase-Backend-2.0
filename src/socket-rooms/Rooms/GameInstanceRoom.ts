@@ -17,7 +17,7 @@ export class GameInstance extends Room<GameSchema> {
     gameSchema.gameId = options.gameId;
     this.setState(gameSchema);
 
-    this.beginGame(options.time, options.gameId);
+    this.beginGame(options);
 
     this.onMessage("move", (client, position: UserLocation) => {
       //this.state.movePlayer(client.sessionId, position);
@@ -39,14 +39,14 @@ export class GameInstance extends Room<GameSchema> {
   }
   // Authorize client based on provided options before WebSocket handshake is complete
   /*onAuth(options) */
-  beginGame(time: number, gameId: string) {
+  beginGame(options) {
     this.clock.start();
     this.clock.setTimeout(() => {
-      this.broadcast("gameBegins", time)
-      this.dispatcher.dispatch(new InitGameCommand(), {fetch: true, gameId})
+      this.broadcast("gameBegins", options.time)
+      this.dispatcher.dispatch(new InitGameCommand(), {fetch: options.fetch, gameId: options.gameId, options})
       console.log("gameBegins");
-    }, 10 * 1000);
-    this.clock.setTimeout(() => this.finishedGame(), time * 1000);
+    }, options.chaseObject.delay * 1000);
+    this.clock.setTimeout(() => this.finishedGame(), options.time * 1000);
   }
 
   finishedGame() {

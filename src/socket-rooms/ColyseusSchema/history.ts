@@ -1,10 +1,11 @@
 import {Schema, type, ArraySchema} from "@colyseus/schema";
 import Action from "./ActionHistory";
 import Move from "./MoveHistory";
+import {Location} from "./location"
 
 export default class History extends Schema {
   @type([Action])
-  actions = new ArraySchema<Action>();
+  private actions = new ArraySchema<Action>();
   @type([Move])
   private moves = new ArraySchema<Move>();
 
@@ -16,19 +17,25 @@ export default class History extends Schema {
     timestamp: number,
     speed: number
   ) {
-    const move = new Move(
+    this.moves.push(new Move().assign({
       gameId,
       playerId,
-      prevLocation,
-      newLocation,
+      prevLocation: new Location().assign({lat: prevLocation[0], lon: prevLocation[1]}),
+      newLocation:  new Location().assign({lat: newLocation[0], lon: newLocation[1]}),
       timestamp,
       speed
-    );
-    this.moves.push(move);
+    }));
   }
 
   addAction(gameId: string, playerId: string, action: string, payload: any) {
-    this.actions.push(new Action(gameId, playerId, action, payload));
+    this.actions.push(new Action().assign({gameId, playerId, 
+        status: payload.status,
+        pseudo: payload.pseudo, 
+        action, 
+        location: new Location().assign({lat: payload.location[0], lon: payload.location[1]}),
+        timestamp: payload.timestamp,
+        chaseObjectLocation: payload.chaseObjectLocation,
+        pseudoStealed: payload.pseudoStealed}));
   }
 
   getHistoryMoves() {

@@ -1,11 +1,13 @@
-import Player from "../src/player";
-import Area from "../src/area";
+import Player from "../src/socket-rooms/ColyseusSchema/PlayerGame";
+import Area from "../src/socket-rooms/ColyseusSchema/area";
 import {
   distance,
   robustPointInPolygon,
   triangulate,
   calcRandomPointInTriangle,
 } from "../src/utils/locationutils";
+import { Location } from "../src/socket-rooms/ColyseusSchema/Location";
+import SchemaConverter from "../src/utils/colyseusUtils";
 
 describe("Location engine", () => {
   let player: Player;
@@ -20,7 +22,7 @@ describe("Location engine", () => {
   ];
 
   beforeAll(() => {
-    player = new Player("Mehdi", 48.8556475, 2.2986304);
+    player = new Player().assign({pseudo: "Mehdi", lat: 48.8556475, lon: 2.2986304});
 
     const top_l = [48.858622, 2.296372];
     const top_r = [48.858662, 2.296466];
@@ -32,7 +34,10 @@ describe("Location engine", () => {
     const bot_left = [48.8523546, 2.3012814];
 
     bounds = [top_left, top_right, bot_right, bot_left];
-    area = new Area("Test", loc, bounds);
+    area = new Area().assign({name: "Test", 
+    location: new Location().assign({lat: loc[0], lon: loc[1]}), 
+    bounds: SchemaConverter.ArrayToLocation(bounds)});
+    area.initBoundsArray()
   });
 
   test("Polygon: Point Inside the polygon, should return -1", async () => {
@@ -47,14 +52,14 @@ describe("Location engine", () => {
   });
 
   test("Player: Should return -1 if a player is inside the area", async () => {
-    expect(robustPointInPolygon(area.getBounds(), player.getLocation())).toBe(
+    expect(robustPointInPolygon(SchemaConverter.LocationToDoubleArray(area.bounds), player.getLocation())).toBe(
       -1
     );
   });
 
   test("Player: Should return 1 if a player is outside the area", async () => {
     player = new Player("Mehdi", 48.8514708, 2.2972489);
-    expect(robustPointInPolygon(area.getBounds(), player.getLocation())).toBe(
+    expect(robustPointInPolygon(SchemaConverter.LocationToDoubleArray(area.getBounds()), player.getLocation())).toBe(
       1
     );
   });
@@ -96,7 +101,7 @@ describe("Location engine", () => {
   it("Triangulation test", async () => {
     const result = calcRandomPointInTriangle(area.getTriangles());
     expect(
-      robustPointInPolygon(area.getBounds(), [
+      robustPointInPolygon(SchemaConverter.LocationToDoubleArray(area.getBounds()), [
         result.latitude,
         result.longitude,
       ])

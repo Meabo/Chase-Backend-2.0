@@ -3,6 +3,7 @@ import History from "../socket-rooms/ColyseusSchema/History";
 import Move from "../socket-rooms/ColyseusSchema/MoveHistory";
 import Action from "../socket-rooms/ColyseusSchema/ActionHistory";
 import Player from "../socket-rooms/ColyseusSchema/PlayerGame";
+import { Constants } from "./constants";
 
 export function getResults(history: History) {
   const totalDistance = history
@@ -15,7 +16,7 @@ export function getResults(history: History) {
   const totalCatchs = history
     .getHistoryActions()
     .filter((action: Action) => {
-      return action.getAction() === "catch" && action.getStatus() === "success";
+      return action.getAction() === Constants.Actions.Catch && action.getStatus() === Constants.Success;
     })
     .reduce((acc, cur) => acc + 1, 0);
 
@@ -23,7 +24,7 @@ export function getResults(history: History) {
     .getHistoryActions()
     .filter(
       (action: Action) =>
-        action.getAction() === "steal" && action.getStatus() === "success"
+        action.getAction() === Constants.Actions.Steal && action.getStatus() === Constants.Success
     )
     .reduce((acc, cur) => acc + 1, 0);
 
@@ -31,7 +32,7 @@ export function getResults(history: History) {
     .getHistoryActions()
     .filter(
       (action: Action) =>
-        action.getAction() === "skill" && action.getStatus() === "success"
+        action.getAction() === Constants.Actions.Skill && action.getStatus() === Constants.Success
     )
     .reduce((acc, cur) => acc + 1, 0);
 
@@ -58,8 +59,8 @@ export function getResultsByPlayer(history: History, player: Player) {
     .filter(
       (action: Action) =>
         action.getPseudo() === player.getPseudo() &&
-        action.getAction() === "catch" &&
-        action.getStatus() === "success"
+        action.getAction() ===  Constants.Actions.Catch &&
+        action.getStatus() === Constants.Success
     )
     .reduce((acc) => acc + 1, 0);
 
@@ -68,8 +69,8 @@ export function getResultsByPlayer(history: History, player: Player) {
     .filter(
       (action: Action) =>
         action.getPseudo() === player.getPseudo() &&
-        action.getAction() === "steal" &&
-        action.getStatus() === "success"
+        action.getAction() ===  Constants.Actions.Steal &&
+        action.getStatus() ===  Constants.Success
     )
     .reduce((acc) => acc + 1, 0);
 
@@ -78,8 +79,8 @@ export function getResultsByPlayer(history: History, player: Player) {
     .filter(
       (action: Action) =>
         action.getPseudo() === player.getPseudo() &&
-        action.getAction() === "steal" &&
-        action.getStatus() === "success"
+        action.getAction() ===  Constants.Actions.Skill &&
+        action.getStatus() === Constants.Success
     )
     .reduce((acc) => acc + 1, 0);
 

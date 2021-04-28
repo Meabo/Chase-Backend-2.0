@@ -9,10 +9,10 @@ export default class Move extends Schema {
   private playerId: string;
   
   @type(Location)
-  private prevlocation: Location;
+  private prevLocation: Location;
 
   @type(Location)
-  private newlocation: Location;
+  private newLocation: Location;
   
   @type("float32")
   private timestamp: number;
@@ -20,29 +20,12 @@ export default class Move extends Schema {
   @type("float32")
   private speed: number;
 
-  constructor(
-    gameId: string,
-    playerId: string,
-    prevLocation: number[],
-    newLocation: number[],
-    timestamp: number,
-    speed: number
-  ) {
-    super();
-    this.gameId = gameId;
-    this.playerId = playerId;
-    this.prevlocation = new Location(prevLocation[0], prevLocation[1]);
-    this.newlocation = new Location(newLocation[0], newLocation[1]);
-    this.timestamp = timestamp;
-    this.speed = speed;
-  }
-
   getPrevLocation() {
-    return this.prevlocation.getLocation();
+    return this.prevLocation.getLocation();
   }
 
   getNewLocation() {
-    return this.newlocation.getLocation();
+    return this.newLocation.getLocation();
   }
 
   getPlayerId() {

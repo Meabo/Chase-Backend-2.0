@@ -1,6 +1,8 @@
-import Area from "../src/area";
+import Area from "../src/socket-rooms/ColyseusSchema/area";
 import User from "../src/user";
 import Discover from "../src/discover";
+import { Location } from "../src/socket-rooms/ColyseusSchema/Location";
+import SchemaConverter from "../src/utils/colyseusUtils";
 
 describe("Discover", () => {
   const discover = new Discover();
@@ -14,7 +16,16 @@ describe("Discover", () => {
     const top_right = [48.8586221, 2.2963717];
     const bot_left = [48.8523546, 2.3012814];
     const bot_right = [48.8539637, 2.3035665];
-    area = new Area("Test", loc, [top_left, top_right, bot_left, bot_right]);
+    area = new Area().assign({
+      name: "Test",
+      location: new Location().assign({ lat: loc[0], lon: loc[1] }),
+      bounds: SchemaConverter.ArrayToLocation([
+        top_left,
+        top_right,
+        bot_left,
+        bot_right,
+      ]),
+    });
     areas.push(area);
     discover.initAreas(areas);
   });
@@ -32,8 +43,7 @@ describe("Discover", () => {
     areas.push(area);
     discover.initAreas(areas);
     const result = discover.showGames(user_logged, 1);
-    
-    expect(areas).toEqual(result);
 
+    expect(areas).toEqual(result);
   });
 });

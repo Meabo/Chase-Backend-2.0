@@ -21,7 +21,7 @@ export class ChaseObjectMoveCommand extends Command<GameSchema> {
     generatePositionForChaseObject() {
       const triangles = this.state.area.getTriangles();
       const { latitude, longitude } = calcRandomPointInTriangle(triangles);
-      this.state.chaseObject = new ChaseObject(latitude, longitude);
+      this.state.chaseObject = new ChaseObject().assign({lat: latitude, lon: longitude});
       console.log(
         "Finished ChaseObjectMoveCommand",
         this.state.chaseObject.toJSON()
@@ -33,11 +33,27 @@ export class ChaseObjectMoveCommand extends Command<GameSchema> {
       if (withGuardianReset) this.state.guardian = null;
     }
   }
+
+  export class ChaseObjectMoveCommandMocked extends Command<GameSchema> {
+    generatePositionForChaseObject(position) {
+      const { lat, lon } = position
+      this.state.chaseObject = new ChaseObject().assign({lat, lon});
+      console.log(
+        "Finished ChaseObjectMoveCommand",
+        this.state.chaseObject.toJSON()
+      );
+    }
+  
+    execute({ withGuardianReset, position }) {
+      this.generatePositionForChaseObject(position);
+      if (withGuardianReset) this.state.guardian = null;
+    }
+  }
   
   export class InitGameCommand extends Command<GameSchema> {
     // Validate fetch and gameId
   
-    async execute({ fetch, gameId }) {
+    async execute({ fetch, gameId, options }) {
       if (fetch) {
         const game: IGame = await getGameById(gameId);
   
@@ -51,6 +67,15 @@ export class ChaseObjectMoveCommand extends Command<GameSchema> {
         this.state.area.initBoundsArray()
   
         return [new ChaseObjectMoveCommand().setPayload(false)];
+      } else {
+        this.state.area = new Area().assign({
+            name: options.name,
+            location: new Location().assign({lat: options.lat, lon: options.lon}),
+            bounds: SchemaConverter.ArrayToLocation(options.bounds)
+          });
+          this.state.area.initBoundsArray()
+          return [new ChaseObjectMoveCommandMocked().setPayload({withGuardianReset: false, position: {lat: options.chaseObject.lat, lon: options.chaseObject.lon}})];
+
       }
     }
   }
@@ -116,7 +141,7 @@ export class ChaseObjectMoveCommand extends Command<GameSchema> {
     }
   
     execute({ playerId }) {
-      this.catchChaseObject(playerId);
+      return this.catchChaseObject(playerId);
     }
   }
   
@@ -152,7 +177,7 @@ export class ChaseObjectMoveCommand extends Command<GameSchema> {
         this.state.players.get(playerId).score += GameParameters.scoreSteal;
       }
   
-      new HistoryAddActionCommand().setPayload({
+      return [new HistoryAddActionCommand().setPayload({
         playerId,
         action: Constants.Actions.Steal,
         result,
@@ -160,11 +185,11 @@ export class ChaseObjectMoveCommand extends Command<GameSchema> {
         lat,
         lon,
         pseudoStealed: guardianPseudo,
-      });
-      return result;
+      })];
+      //return result;
     }
     execute({ playerId }) {
-      this.stealChaseObject(playerId);
+      return this.stealChaseObject(playerId);
     }
   }
   
@@ -173,9 +198,9 @@ export class ChaseObjectMoveCommand extends Command<GameSchema> {
       try {
         const lat = this.state.players.get(playerId).lat
         const lon = this.state.players.get(playerId).lon
-        console.log('Player', this.state.players.get(playerId).toJSON())
+       // console.log('Player', this.state.players.get(playerId).toJSON())
         const { lat: newlat, lon: newlon, speed } = userLocation;
-        console.log('Payload', userLocation)
+        //console.log('Payload', userLocation)
   
         if (lat && lon && newlat && newlon) {
           const distanceTraveled = distance(lat, lon, newlat, newlon) / 1000;
@@ -206,7 +231,7 @@ export class ChaseObjectMoveCommand extends Command<GameSchema> {
           !this.state.area.isInside([newlat, newlon])
         ) {
          // Add this once going real:
-         // return [new ChaseObjectMoveCommand().setPayload({withGuardianReset: true})];
+          return [new ChaseObjectMoveCommand().setPayload({withGuardianReset: true})];
         }
       }
       catch (err) {
